@@ -49,6 +49,7 @@ export default function AgendaDetailPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<EditValues | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [showAddItem, setShowAddItem] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [newItem, setNewItem] = useState({ title: '', date: selectedDate, start_time: '09:00', end_time: '', location: '', description: '' });
@@ -123,6 +124,7 @@ export default function AgendaDetailPage() {
   async function handleSaveEdit(item: AgendaItem) {
     if (!token || !editValues) return;
     setSaving(true);
+    setSaveError('');
     try {
       const updated = await itemsApi.update(id, item.id, {
         title: editValues.title,
@@ -134,8 +136,9 @@ export default function AgendaDetailPage() {
       }, token);
       setAgenda((a) => a ? { ...a, items: (a.items ?? []).map((i) => i.id === item.id ? updated : i) } : null);
       setEditingId(null);
-    } catch { /* ignore */ }
-    finally { setSaving(false); }
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Save failed');
+    } finally { setSaving(false); }
   }
 
   async function handleDeleteItem(itemId: string) {
@@ -150,6 +153,7 @@ export default function AgendaDetailPage() {
   async function handleAddItem(e: React.FormEvent) {
     e.preventDefault();
     if (!token || !agenda || !newItem.title || !newItem.date || !newItem.start_time) return;
+    setSaveError('');
     try {
       const item = await itemsApi.create(agenda.id, {
         title: newItem.title,
@@ -162,8 +166,13 @@ export default function AgendaDetailPage() {
       setAgenda((a) => a ? { ...a, items: [...(a.items ?? []), item] } : null);
       setNewItem({ title: '', date: selectedDate, start_time: '09:00', end_time: '', location: '', description: '' });
       setShowAddItem(false);
-    } catch { /* ignore */ }
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Failed to add item');
+    }
   }
+
+  // owner and editors can add/edit/delete items
+  const canEdit = token && (agenda?.role === 'owner' || agenda?.role === 'editor');
 
   const selectedDateLabel = useMemo(() => {
     const d = new Date(selectedDate + 'T00:00:00');
@@ -223,7 +232,7 @@ export default function AgendaDetailPage() {
       {/* Date heading + Add item button */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <p className="text-[11px] font-medium uppercase tracking-wide text-[#555]">{selectedDateLabel}</p>
-        {token && !showAddItem && (
+        {canEdit && !showAddItem && (
           <button type="button" onClick={() => setShowAddItem(true)}
             className="rounded-md border border-[#2a2a2a] px-3 py-1.5 text-sm text-[#888] transition-colors hover:border-[#444] hover:text-[#fafafa]">
             + Add item
@@ -259,13 +268,16 @@ export default function AgendaDetailPage() {
               <label className={LABEL}>Description <span className="text-[#444]">(optional)</span></label>
               <textarea rows={2} value={newItem.description} onChange={(e) => setNewItem((n) => ({ ...n, description: e.target.value }))} className={INPUT} />
             </div>
-            <div className="col-span-2 flex gap-2">
-              <button type="submit" className="rounded-md bg-[#fafafa] px-4 py-1.5 text-sm font-semibold text-[#111] hover:bg-[#e5e5e5] transition-colors">
-                Add item
-              </button>
-              <button type="button" onClick={() => setShowAddItem(false)} className="rounded-md px-4 py-1.5 text-sm text-[#555] hover:bg-[#1a1a1a] hover:text-[#fafafa] transition-colors">
-                Cancel
-              </button>
+            <div className="col-span-2 flex flex-col gap-2">
+              {saveError && <p className="text-xs text-red-400">{saveError}</p>}
+              <div className="flex gap-2">
+                <button type="submit" className="rounded-md bg-[#fafafa] px-4 py-1.5 text-sm font-semibold text-[#111] hover:bg-[#e5e5e5] transition-colors">
+                  Add item
+                </button>
+                <button type="button" onClick={() => { setShowAddItem(false); setSaveError(''); }} className="rounded-md px-4 py-1.5 text-sm text-[#555] hover:bg-[#1a1a1a] hover:text-[#fafafa] transition-colors">
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </form>
@@ -346,12 +358,13 @@ export default function AgendaDetailPage() {
                             <textarea rows={2} value={editValues.description} onChange={(e) => setEditValues((v) => v ? { ...v, description: e.target.value } : v)} className={INPUT} />
                           </div>
                         </div>
+                        {saveError && <p className="mb-2 text-xs text-red-400">{saveError}</p>}
                         <div className="flex gap-2">
                           <button type="button" onClick={() => handleSaveEdit(item)} disabled={saving}
                             className="rounded-md bg-[#fafafa] px-3 py-1.5 text-sm font-semibold text-[#111] hover:bg-[#e5e5e5] disabled:opacity-40 transition-colors">
                             {saving ? 'Saving…' : 'Save'}
                           </button>
-                          <button type="button" onClick={() => setEditingId(null)}
+                          <button type="button" onClick={() => { setEditingId(null); setSaveError(''); }}
                             className="rounded-md px-3 py-1.5 text-sm text-[#555] hover:bg-[#161616] hover:text-[#fafafa] transition-colors">
                             Cancel
                           </button>
@@ -369,7 +382,7 @@ export default function AgendaDetailPage() {
                             </p>
                           </div>
                           <div className="flex items-center gap-3">
-                            {token && (
+                            {canEdit && (
                               <>
                                 <button type="button" onClick={() => startEdit(item)}
                                   className="text-xs text-[#555] underline hover:text-[#fafafa]">

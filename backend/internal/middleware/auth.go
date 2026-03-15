@@ -2,11 +2,14 @@ package middleware
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type contextKey string
@@ -15,31 +18,43 @@ const UserIDKey contextKey = "user_id"
 
 type tokenPayload struct {
 	Sub string `json:"sub"`
+	Exp int64  `json:"exp"`
 }
 
-// extractUserIDFromToken decodes the JWT payload without verifying the signature.
-// For local development with Supabase this is usually sufficient, since the token
-// comes directly from Supabase Auth in the frontend.
-func extractUserIDFromToken(raw string) (string, error) {
+func verifyAndExtractUserID(raw, secret string) (string, error) {
 	parts := strings.Split(raw, ".")
-	if len(parts) < 2 {
+	if len(parts) != 3 {
 		return "", errors.New("invalid token format")
 	}
+	// Verify HMAC-SHA256 signature
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write([]byte(parts[0] + "." + parts[1]))
+	sig, err := base64.RawURLEncoding.DecodeString(parts[2])
+	if err != nil {
+		return "", errors.New("invalid token signature")
+	}
+	if !hmac.Equal(mac.Sum(nil), sig) {
+		return "", errors.New("invalid token signature")
+	}
+	// Decode payload
 	payloadBytes, err := base64.RawURLEncoding.DecodeString(parts[1])
 	if err != nil {
-		return "", err
+		return "", errors.New("invalid token payload")
 	}
 	var p tokenPayload
 	if err := json.Unmarshal(payloadBytes, &p); err != nil {
-		return "", err
+		return "", errors.New("invalid token payload")
 	}
 	if p.Sub == "" {
 		return "", errors.New("missing sub in token")
 	}
+	if p.Exp > 0 && time.Now().Unix() > p.Exp {
+		return "", errors.New("token expired")
+	}
 	return p.Sub, nil
 }
 
-func Auth(_ string) func(next http.Handler) http.Handler {
+func Auth(secret string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			auth := r.Header.Get("Authorization")
@@ -52,7 +67,7 @@ func Auth(_ string) func(next http.Handler) http.Handler {
 				http.Error(w, `{"error":"invalid authorization format"}`, http.StatusUnauthorized)
 				return
 			}
-			userID, err := extractUserIDFromToken(parts[1])
+			userID, err := verifyAndExtractUserID(parts[1], secret)
 			if err != nil {
 				http.Error(w, `{"error":"invalid token"}`, http.StatusUnauthorized)
 				return
@@ -63,14 +78,14 @@ func Auth(_ string) func(next http.Handler) http.Handler {
 	}
 }
 
-func OptionalAuth(_ string) func(next http.Handler) http.Handler {
+func OptionalAuth(secret string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			auth := r.Header.Get("Authorization")
 			if auth != "" {
 				parts := strings.SplitN(auth, " ", 2)
 				if len(parts) == 2 && parts[0] == "Bearer" {
-					if userID, err := extractUserIDFromToken(parts[1]); err == nil {
+					if userID, err := verifyAndExtractUserID(parts[1], secret); err == nil {
 						ctx := context.WithValue(r.Context(), UserIDKey, userID)
 						r = r.WithContext(ctx)
 					}

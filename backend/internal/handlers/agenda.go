@@ -12,16 +12,14 @@ import (
 	"github.com/google/uuid"
 )
 
+var validVisibility = map[string]bool{"public": true, "restricted": true, "private": true}
+
 func (h *Handler) ListAgendas(w http.ResponseWriter, r *http.Request) {
 	userID, ok := middleware.GetUserID(r.Context())
 	if !ok {
 		jsonError(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
-	// Note: GROUP BY only on agenda columns; m.role resolved via MAX() to avoid
-	// duplicate rows if a user ever has multiple member rows for the same agenda.
-	// item_count uses omitempty so agendas with 0 items omit the key; frontend
-	// handles this with `a.item_count ?? 0`.
 	rows, err := h.DB.Query(`
 		SELECT a.id, a.owner_id, a.title, a.description, a.visibility, a.created_at, a.updated_at,
 		       COUNT(ai.id) AS item_count,
@@ -34,23 +32,24 @@ func (h *Handler) ListAgendas(w http.ResponseWriter, r *http.Request) {
 		ORDER BY a.updated_at DESC
 	`, userID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	defer rows.Close()
-	var list []models.Agenda
+	list := []models.Agenda{}
 	for rows.Next() {
 		var a models.Agenda
 		var desc *string
 		if err := rows.Scan(&a.ID, &a.OwnerID, &a.Title, &desc, &a.Visibility, &a.CreatedAt, &a.UpdatedAt, &a.ItemCount, &a.Role); err != nil {
-			jsonError(w, err.Error(), http.StatusInternalServerError)
+			internalError(w, err)
 			return
 		}
 		a.Description = desc
 		list = append(list, a)
 	}
-	if list == nil {
-		list = []models.Agenda{}
+	if err := rows.Err(); err != nil {
+		internalError(w, err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(list)
@@ -73,6 +72,10 @@ func (h *Handler) CreateAgenda(w http.ResponseWriter, r *http.Request) {
 	}
 	visibility := "private"
 	if req.Visibility != nil && *req.Visibility != "" {
+		if !validVisibility[*req.Visibility] {
+			jsonError(w, "visibility must be public, restricted, or private", http.StatusBadRequest)
+			return
+		}
 		visibility = *req.Visibility
 	}
 	id := uuid.New().String()
@@ -81,7 +84,7 @@ func (h *Handler) CreateAgenda(w http.ResponseWriter, r *http.Request) {
 		VALUES ($1, $2, $3, $4, $5)
 	`, id, userID, req.Title, req.Description, visibility)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	var a models.Agenda
@@ -90,7 +93,7 @@ func (h *Handler) CreateAgenda(w http.ResponseWriter, r *http.Request) {
 		FROM agendas WHERE id = $1
 	`, id).Scan(&a.ID, &a.OwnerID, &a.Title, &a.Description, &a.Visibility, &a.CreatedAt, &a.UpdatedAt)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -106,6 +109,7 @@ func (h *Handler) GetAgenda(w http.ResponseWriter, r *http.Request) {
 	}
 	userID, hasAuth := middleware.GetUserID(r.Context())
 	canView := false
+	role := ""
 	if hasAuth {
 		var ownerID string
 		err := h.DB.QueryRow("SELECT owner_id FROM agendas WHERE id = $1", id).Scan(&ownerID)
@@ -115,8 +119,8 @@ func (h *Handler) GetAgenda(w http.ResponseWriter, r *http.Request) {
 		}
 		if ownerID == userID {
 			canView = true
+			role = "owner"
 		} else {
-			var role string
 			err = h.DB.QueryRow("SELECT role FROM agenda_members WHERE agenda_id = $1 AND user_id = $2", id, userID).Scan(&role)
 			canView = (err == nil)
 		}
@@ -135,12 +139,13 @@ func (h *Handler) GetAgenda(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.Description = desc
+	a.Role = role
 	rows, err := h.DB.Query(`
 		SELECT id, agenda_id, title, description, location, date::text, start_time::text, end_time::text, created_at, updated_at
 		FROM agenda_items WHERE agenda_id = $1 ORDER BY date, start_time
 	`, id)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	defer rows.Close()
@@ -148,13 +153,17 @@ func (h *Handler) GetAgenda(w http.ResponseWriter, r *http.Request) {
 		var item models.AgendaItem
 		var idesc, loc, et *string
 		if err := rows.Scan(&item.ID, &item.AgendaID, &item.Title, &idesc, &loc, &item.Date, &item.StartTime, &et, &item.CreatedAt, &item.UpdatedAt); err != nil {
-			jsonError(w, err.Error(), http.StatusInternalServerError)
+			internalError(w, err)
 			return
 		}
 		item.Description = idesc
 		item.Location = loc
 		item.EndTime = et
 		a.Items = append(a.Items, item)
+	}
+	if err := rows.Err(); err != nil {
+		internalError(w, err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(a)
@@ -178,6 +187,10 @@ func (h *Handler) UpdateAgenda(w http.ResponseWriter, r *http.Request) {
 	var req models.UpdateAgendaRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		jsonError(w, "invalid body", http.StatusBadRequest)
+		return
+	}
+	if req.Visibility != nil && !validVisibility[*req.Visibility] {
+		jsonError(w, "visibility must be public, restricted, or private", http.StatusBadRequest)
 		return
 	}
 	var set []string
@@ -204,10 +217,10 @@ func (h *Handler) UpdateAgenda(w http.ResponseWriter, r *http.Request) {
 	}
 	set = append(set, "updated_at = NOW()")
 	args = append(args, id)
-	q := "UPDATE agendas SET " + strings.Join(set, ", ") + " WHERE id = $"+fmtPos(n)
+	q := "UPDATE agendas SET " + strings.Join(set, ", ") + " WHERE id = $" + fmtPos(n)
 	_, err := h.DB.Exec(q, args...)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	h.GetAgenda(w, r)
@@ -236,7 +249,7 @@ func (h *Handler) DeleteAgenda(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = h.DB.Exec("DELETE FROM agendas WHERE id = $1", id)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

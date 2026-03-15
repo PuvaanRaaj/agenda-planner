@@ -30,7 +30,7 @@ func (h *Handler) ShareByToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	if expiresAt != nil && time.Now().After(*expiresAt) {
@@ -52,7 +52,7 @@ func (h *Handler) ShareByToken(w http.ResponseWriter, r *http.Request) {
 		FROM agenda_items WHERE agenda_id = $1 ORDER BY date, start_time
 	`, agendaID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	defer rows.Close()
@@ -60,13 +60,17 @@ func (h *Handler) ShareByToken(w http.ResponseWriter, r *http.Request) {
 		var item models.AgendaItem
 		var idesc, loc, et *string
 		if err := rows.Scan(&item.ID, &item.AgendaID, &item.Title, &idesc, &loc, &item.Date, &item.StartTime, &et, &item.CreatedAt, &item.UpdatedAt); err != nil {
-			jsonError(w, err.Error(), http.StatusInternalServerError)
+			internalError(w, err)
 			return
 		}
 		item.Description = idesc
 		item.Location = loc
 		item.EndTime = et
 		a.Items = append(a.Items, item)
+	}
+	if err := rows.Err(); err != nil {
+		internalError(w, err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"permission": permission, "agenda": a})
@@ -119,7 +123,7 @@ func (h *Handler) CreateShareToken(w http.ResponseWriter, r *http.Request) {
 		VALUES ($1, $2, $3, $4, $5)
 	`, uuid.New().String(), agendaID, token, req.Permission, expiresAt)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -157,20 +161,24 @@ func (h *Handler) ListMembers(w http.ResponseWriter, r *http.Request) {
 		WHERE m.agenda_id = $1
 	`, agendaID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	defer rows.Close()
-	var list []models.AgendaMember
+	list := []models.AgendaMember{}
 	for rows.Next() {
 		var m models.AgendaMember
 		var name *string
 		if err := rows.Scan(&m.ID, &m.AgendaID, &m.UserID, &m.Role, &m.Email, &name); err != nil {
-			jsonError(w, err.Error(), http.StatusInternalServerError)
+			internalError(w, err)
 			return
 		}
 		m.Name = name
 		list = append(list, m)
+	}
+	if err := rows.Err(); err != nil {
+		internalError(w, err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(list)
@@ -206,11 +214,15 @@ func (h *Handler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "role must be viewer, commenter, or editor", http.StatusBadRequest)
 		return
 	}
-	_, err := h.DB.Exec(`
+	res, err := h.DB.Exec(`
 		UPDATE agenda_members SET role = $1 WHERE agenda_id = $2 AND user_id = $3
 	`, req.Role, agendaID, memberUserID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
+		return
+	}
+	if ra, _ := res.RowsAffected(); ra == 0 {
+		jsonError(w, "member not found", http.StatusNotFound)
 		return
 	}
 	var m models.AgendaMember
@@ -222,7 +234,7 @@ func (h *Handler) UpdateMember(w http.ResponseWriter, r *http.Request) {
 		WHERE m.agenda_id = $1 AND m.user_id = $2
 	`, agendaID, memberUserID).Scan(&m.ID, &m.AgendaID, &m.UserID, &m.Role, &m.Email, &name)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	m.Name = name

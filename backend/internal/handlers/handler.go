@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -19,9 +21,19 @@ func jsonError(w http.ResponseWriter, msg string, code int) {
 	json.NewEncoder(w).Encode(map[string]string{"error": msg})
 }
 
-func fmtPos(n int) string {
-	return fmt.Sprintf("%d", n)
+// internalError logs the real error and returns a generic 500 to the client
+// so that database internals are never exposed.
+func internalError(w http.ResponseWriter, err error) {
+	log.Printf("internal error: %v", err)
+	jsonError(w, "internal server error", http.StatusInternalServerError)
 }
+
+func fmtPos(n int) string {
+	return strconv.Itoa(n)
+}
+
+// suppress unused import of fmt in case callers still use it
+var _ = fmt.Sprintf
 
 func (h *Handler) canEditAgenda(ctx context.Context, agendaID, userID string) bool {
 	var ownerID string
@@ -51,4 +63,19 @@ func (h *Handler) canCommentByToken(agendaID, token string) bool {
 		return false
 	}
 	return permission == "comment" || permission == "edit"
+}
+
+func (h *Handler) canViewByToken(agendaID, token string) bool {
+	var expiresAt *time.Time
+	var permission string
+	err := h.DB.QueryRow(`
+		SELECT permission, expires_at FROM share_tokens WHERE agenda_id = $1 AND token = $2`,
+		agendaID, token).Scan(&permission, &expiresAt)
+	if err != nil {
+		return false
+	}
+	if expiresAt != nil && time.Now().After(*expiresAt) {
+		return false
+	}
+	return permission == "view" || permission == "comment" || permission == "edit"
 }

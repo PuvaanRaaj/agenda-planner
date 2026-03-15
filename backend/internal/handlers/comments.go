@@ -40,7 +40,8 @@ func (h *Handler) GetComments(w http.ResponseWriter, r *http.Request) {
 	}
 	if !canView {
 		token := r.Header.Get("X-Share-Token")
-		if token != "" && h.canCommentByToken(agendaID, token) {
+		// Any permission level (view/comment/edit) may read comments
+		if token != "" && h.canViewByToken(agendaID, token) {
 			canView = true
 		}
 	}
@@ -56,17 +57,17 @@ func (h *Handler) GetComments(w http.ResponseWriter, r *http.Request) {
 		ORDER BY c.created_at ASC
 	`, itemID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	defer rows.Close()
-	var list []models.Comment
+	list := []models.Comment{}
 	for rows.Next() {
 		var c models.Comment
 		var name *string
 		var userIDNull sql.NullString
 		if err := rows.Scan(&c.ID, &c.ItemID, &userIDNull, &c.Body, &c.CreatedAt, &c.Email, &name); err != nil {
-			jsonError(w, err.Error(), http.StatusInternalServerError)
+			internalError(w, err)
 			return
 		}
 		if userIDNull.Valid {
@@ -74,6 +75,10 @@ func (h *Handler) GetComments(w http.ResponseWriter, r *http.Request) {
 		}
 		c.Name = name
 		list = append(list, c)
+	}
+	if err := rows.Err(); err != nil {
+		internalError(w, err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(list)
@@ -136,7 +141,7 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		`, id, itemID, req.Body)
 	}
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	var c models.Comment
@@ -149,7 +154,7 @@ func (h *Handler) CreateComment(w http.ResponseWriter, r *http.Request) {
 		WHERE c.id = $1
 	`, id).Scan(&c.ID, &c.ItemID, &userIDNull, &c.Body, &c.CreatedAt, &c.Email, &name)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	if userIDNull.Valid {
@@ -172,18 +177,20 @@ func (h *Handler) DeleteComment(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "comment id required", http.StatusBadRequest)
 		return
 	}
-	var commentUserID string
+	// user_id is nullable (ON DELETE SET NULL); use NullString to avoid scan error
+	var commentUserID sql.NullString
 	if err := h.DB.QueryRow("SELECT user_id FROM comments WHERE id = $1", commentID).Scan(&commentUserID); err != nil {
 		jsonError(w, "not found", http.StatusNotFound)
 		return
 	}
-	if commentUserID != userID {
+	// Only the comment author may delete it
+	if !commentUserID.Valid || commentUserID.String != userID {
 		jsonError(w, "can only delete own comment", http.StatusForbidden)
 		return
 	}
 	_, err := h.DB.Exec("DELETE FROM comments WHERE id = $1", commentID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

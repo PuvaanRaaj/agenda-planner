@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"agenda-planner/backend/internal/middleware"
@@ -10,6 +11,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+)
+
+var (
+	dateRe = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`)
+	timeRe = regexp.MustCompile(`^\d{2}:\d{2}(:\d{2})?$`)
 )
 
 func (h *Handler) CreateItem(w http.ResponseWriter, r *http.Request) {
@@ -36,13 +42,25 @@ func (h *Handler) CreateItem(w http.ResponseWriter, r *http.Request) {
 		jsonError(w, "title, date, start_time required", http.StatusBadRequest)
 		return
 	}
+	if !dateRe.MatchString(req.Date) {
+		jsonError(w, "date must be YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
+	if !timeRe.MatchString(req.StartTime) {
+		jsonError(w, "start_time must be HH:MM or HH:MM:SS", http.StatusBadRequest)
+		return
+	}
+	if req.EndTime != nil && *req.EndTime != "" && !timeRe.MatchString(*req.EndTime) {
+		jsonError(w, "end_time must be HH:MM or HH:MM:SS", http.StatusBadRequest)
+		return
+	}
 	itemID := uuid.New().String()
 	_, err := h.DB.Exec(`
 		INSERT INTO agenda_items (id, agenda_id, title, description, location, date, start_time, end_time)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	`, itemID, agendaID, req.Title, req.Description, req.Location, req.Date, req.StartTime, req.EndTime)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	var item models.AgendaItem
@@ -51,7 +69,7 @@ func (h *Handler) CreateItem(w http.ResponseWriter, r *http.Request) {
 		FROM agenda_items WHERE id = $1
 	`, itemID).Scan(&item.ID, &item.AgendaID, &item.Title, &item.Description, &item.Location, &item.Date, &item.StartTime, &item.EndTime, &item.CreatedAt, &item.UpdatedAt)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -78,6 +96,18 @@ func (h *Handler) UpdateItem(w http.ResponseWriter, r *http.Request) {
 	var req models.UpdateItemRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		jsonError(w, "invalid body", http.StatusBadRequest)
+		return
+	}
+	if req.Date != nil && !dateRe.MatchString(*req.Date) {
+		jsonError(w, "date must be YYYY-MM-DD", http.StatusBadRequest)
+		return
+	}
+	if req.StartTime != nil && !timeRe.MatchString(*req.StartTime) {
+		jsonError(w, "start_time must be HH:MM or HH:MM:SS", http.StatusBadRequest)
+		return
+	}
+	if req.EndTime != nil && *req.EndTime != "" && !timeRe.MatchString(*req.EndTime) {
+		jsonError(w, "end_time must be HH:MM or HH:MM:SS", http.StatusBadRequest)
 		return
 	}
 	var set []string
@@ -133,10 +163,10 @@ func (h *Handler) UpdateItem(w http.ResponseWriter, r *http.Request) {
 	}
 	set = append(set, "updated_at = NOW()")
 	args = append(args, itemID, agendaID)
-	q := "UPDATE agenda_items SET " + strings.Join(set, ", ") + " WHERE id = $"+fmtPos(n)+" AND agenda_id = $"+fmtPos(n+1)
+	q := "UPDATE agenda_items SET " + strings.Join(set, ", ") + " WHERE id = $" + fmtPos(n) + " AND agenda_id = $" + fmtPos(n+1)
 	_, err := h.DB.Exec(q, args...)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	var item models.AgendaItem
@@ -174,7 +204,7 @@ func (h *Handler) DeleteItem(w http.ResponseWriter, r *http.Request) {
 	}
 	res, err := h.DB.Exec("DELETE FROM agenda_items WHERE id = $1 AND agenda_id = $2", itemID, agendaID)
 	if err != nil {
-		jsonError(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err)
 		return
 	}
 	ra, _ := res.RowsAffected()
