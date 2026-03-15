@@ -23,6 +23,7 @@ func main() {
 	if jwtSecret == "" {
 		log.Fatal("SUPABASE_JWT_SECRET is required")
 	}
+	supabaseURL := os.Getenv("SUPABASE_URL") // used to fetch JWKS for ES256 tokens
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -36,8 +37,8 @@ func main() {
 	defer database.Close()
 
 	h := &handlers.Handler{DB: database}
-	auth := middleware.Auth(jwtSecret)
-	optionalAuth := middleware.OptionalAuth(jwtSecret)
+	auth := middleware.Auth(jwtSecret, supabaseURL)
+	optionalAuth := middleware.OptionalAuth(jwtSecret, supabaseURL)
 
 	r := chi.NewRouter()
 	r.Use(makeCORSMiddleware(allowedOrigin))
