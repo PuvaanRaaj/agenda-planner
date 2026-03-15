@@ -79,3 +79,18 @@ func (h *Handler) canViewByToken(agendaID, token string) bool {
 	}
 	return permission == "view" || permission == "comment" || permission == "edit"
 }
+
+// planAgendaLimit returns the max agendas allowed for a plan.
+// Returns -1 for unlimited.
+func planAgendaLimit(plan string) int {
+	switch plan {
+	case "starter":
+		return 5
+	case "basic":
+		return 10
+	case "pro":
+		return -1
+	default: // free
+		return 3
+	}
+}

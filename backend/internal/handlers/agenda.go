@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -78,6 +79,24 @@ func (h *Handler) CreateAgenda(w http.ResponseWriter, r *http.Request) {
 		}
 		visibility = *req.Visibility
 	}
+	// Enforce per-plan agenda creation limit
+	var userPlan string
+	var agendaCount int
+	if err := h.DB.QueryRow(`
+		SELECT u.plan, COUNT(a.id)
+		FROM users u
+		LEFT JOIN agendas a ON a.owner_id = u.id
+		WHERE u.id = $1
+		GROUP BY u.plan`, userID).Scan(&userPlan, &agendaCount); err != nil && err != sql.ErrNoRows {
+		internalError(w, err)
+		return
+	}
+	limit := planAgendaLimit(userPlan)
+	if limit != -1 && agendaCount >= limit {
+		jsonError(w, "agenda_limit_reached", http.StatusForbidden)
+		return
+	}
+
 	id := uuid.New().String()
 	_, err := h.DB.Exec(`
 		INSERT INTO agendas (id, owner_id, title, description, visibility)
