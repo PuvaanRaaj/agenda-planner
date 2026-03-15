@@ -380,6 +380,9 @@ export default function AgendaDetailPage() {
                               {formatTime(item.start_time)}{item.end_time ? ` – ${formatTime(item.end_time)}` : ''}
                               {item.location ? ` · ${item.location}` : ''}
                             </p>
+                            {item.description && (
+                              <p className="mt-1 text-xs text-[#777]">{item.description}</p>
+                            )}
                           </div>
                           <div className="flex items-center gap-3">
                             {canEdit && (
