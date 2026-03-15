@@ -91,36 +91,32 @@ export default function ShareViewPage() {
   }, [selectedDate]);
 
   const nav = (
-    <div className="flex h-12 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:px-5">
-      <div className="flex min-w-0 items-center gap-2">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-600">
-          <span className="text-xs font-bold text-white">A</span>
+    <div className="flex h-11 items-center justify-between border-b border-[#1a1a1a] bg-[#0d0d0d] px-5">
+      <div className="flex items-center gap-2">
+        <div className="flex h-[22px] w-[22px] items-center justify-center rounded-[4px] bg-[#fafafa]">
+          <span className="text-[11px] font-bold text-[#111]">A</span>
         </div>
-        <span className="text-sm text-slate-500">Agenda</span>
+        <span className="text-[#444] text-sm">Agenda</span>
         {agenda && (
           <>
-            <span className="text-slate-300">/</span>
-            <span className="truncate text-sm font-medium text-slate-700 max-w-[200px]">{agenda.title}</span>
+            <span className="text-[#333]">/</span>
+            <span className="text-sm font-medium text-[#fafafa] truncate max-w-[200px]">{agenda.title}</span>
           </>
         )}
       </div>
-      <span className="text-xs font-medium text-slate-500">{PERMISSION_LABEL[permission] ?? 'Shared link'}</span>
+      <span className="text-xs text-[#555]">{PERMISSION_LABEL[permission] ?? 'Shared link'}</span>
     </div>
   );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-[#111111]">
         {nav}
-        <div className="flex h-12 gap-1 border-b border-slate-200 bg-white px-4 py-2">
-          {Array.from({ length: 7 }, (_, i) => (
-            <div key={i} className="h-full flex-1 animate-pulse rounded-lg bg-slate-100" />
-          ))}
+        <div className="flex h-11 gap-1 border-b border-[#1a1a1a] px-4 py-2">
+          {Array.from({ length: 7 }, (_, i) => <div key={i} className="h-full flex-1 animate-pulse rounded bg-[#161616]" />)}
         </div>
         <div className="space-y-2 px-4 py-4">
-          {[0, 1].map((i) => (
-            <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
-          ))}
+          {[0, 1].map((i) => <div key={i} className="h-10 animate-pulse rounded-md bg-[#161616]" />)}
         </div>
       </div>
     );
@@ -128,42 +124,40 @@ export default function ShareViewPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50">
-        <p className="text-sm text-slate-600">{error}</p>
-        <a href="/" className="text-sm font-medium text-primary-600 hover:text-primary-700 underline">
-          Go home
-        </a>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#111111]">
+        <p className="text-sm text-[#555]">{error}</p>
+        <a href="/" className="text-sm text-[#555] underline hover:text-[#fafafa]">Go home</a>
       </div>
     );
   }
 
   if (needsAuth) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-[#111111]">
         {nav}
         <div className="flex min-h-[70vh] flex-col items-center justify-center gap-5 px-5 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-slate-100">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-slate-500">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#161616]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#888]">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
           </div>
           <div>
-            <p className="mb-1.5 text-base font-semibold text-slate-900">Sign in to access this link</p>
-            <p className="text-sm text-slate-600">
+            <p className="mb-1.5 text-base font-semibold text-[#fafafa]">Sign in to access this link</p>
+            <p className="text-sm text-[#555]">
               This shared agenda requires you to be signed in
               {permission === 'edit' ? ' to view and edit.' : ' to view and comment.'}
             </p>
           </div>
-          <div className="flex w-full max-w-[240px] flex-col gap-2">
+          <div className="flex flex-col gap-2 w-full max-w-[240px]">
             <a
               href={`/login?redirect=/share/${shareToken}`}
-              className="rounded-lg bg-primary-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
+              className="rounded-md bg-[#fafafa] px-4 py-2.5 text-sm font-semibold text-[#111] text-center hover:bg-[#e5e5e5] transition-colors"
             >
               Sign in
             </a>
             <a
               href={`/signup?redirect=/share/${shareToken}`}
-              className="rounded-lg border border-slate-300 px-4 py-2.5 text-center text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              className="rounded-md border border-[#2a2a2a] px-4 py-2.5 text-sm text-[#888] text-center hover:border-[#444] hover:text-[#fafafa] transition-colors"
             >
               Create account
             </a>
@@ -175,71 +169,68 @@ export default function ShareViewPage() {
 
   if (!agenda) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50">
-        <p className="text-sm text-slate-600">This link is invalid or has expired.</p>
-        <a href="/" className="text-sm font-medium text-primary-600 hover:text-primary-700 underline">
-          Go home
-        </a>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#111111]">
+        <p className="text-sm text-[#555]">This link is invalid or has expired.</p>
+        <a href="/" className="text-sm text-[#555] underline hover:text-[#fafafa]">Go home</a>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#111111]">
       {nav}
 
       <WeekStrip selectedDate={selectedDate} onSelectDate={(d) => { setSelectedDate(d); setExpandedId(null); }} itemDates={itemDates} />
 
       <div className="px-4 pt-3 pb-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{selectedDateLabel}</p>
+        <p className="text-[11px] font-medium uppercase tracking-wide text-[#555]">{selectedDateLabel}</p>
       </div>
 
       <div className="relative px-4 py-2">
-        <div className="pointer-events-none absolute bottom-0 top-0 w-px bg-slate-200" style={{ left: '60px' }} />
+        <div className="pointer-events-none absolute bottom-0 top-0 w-px bg-[#1f1f1f]" style={{ left: '60px' }} />
 
         {dayItems.length === 0 && (
-          <p className="py-8 text-center text-sm text-slate-500">No items for this day.</p>
+          <p className="py-8 text-center text-sm text-[#444]">No items for this day.</p>
         )}
 
         {dayItems.map((item) => {
           const isExpanded = expandedId === item.id;
           return (
             <div key={item.id} className="mb-1.5 flex gap-2.5">
-              <span className="min-w-[28px] pt-2.5 text-[10px] tabular-nums text-slate-500">
+              <span className="min-w-[28px] pt-2.5 text-[10px] tabular-nums text-[#444]">
                 {formatTime(item.start_time)}
               </span>
               <div className="flex-1">
                 <button
                   type="button"
                   onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                  className={`w-full rounded-t-lg border px-3 py-2 text-left transition-colors ${
+                  className={`w-full px-3 py-2 text-left transition-colors ${
                     isExpanded
-                      ? 'border-slate-200 border-b-0 bg-white shadow-sm'
-                      : 'rounded-b-lg border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                      ? 'rounded-t-md border border-[#fafafa] bg-[#fafafa]'
+                      : 'rounded-md border border-[#222222] bg-[#161616] hover:border-[#2a2a2a] hover:bg-[#1a1a1a]'
                   }`}
                 >
-                  <p className={`text-sm font-medium ${isExpanded ? 'font-semibold text-slate-900' : 'text-slate-800'}`}>{item.title}</p>
+                  <p className={`text-sm font-medium ${isExpanded ? 'font-semibold text-[#111]' : 'text-[#ddd]'}`}>{item.title}</p>
                   {(item.end_time || item.location) && (
-                    <p className="mt-0.5 text-xs text-slate-500">
+                    <p className={`mt-0.5 text-[11px] ${isExpanded ? 'text-[#666]' : 'text-[#555]'}`}>
                       {item.end_time ? `${formatTime(item.start_time)} – ${formatTime(item.end_time)}` : ''}
                       {item.location ? ` · ${item.location}` : ''}
                     </p>
                   )}
                 </button>
                 {isExpanded && (
-                  <div className="rounded-b-lg border border-t-0 border-slate-200 bg-slate-50 overflow-hidden">
-                    <div className="flex items-start justify-between border-b border-slate-200 px-4 py-3">
+                  <div className="rounded-b-md border border-t-0 border-[#222222] bg-[#0d0d0d] overflow-hidden">
+                    <div className="flex items-start justify-between border-b border-[#1f1f1f] px-3 py-2.5">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{item.title}</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-sm font-semibold text-[#fafafa]">{item.title}</p>
+                        <p className="text-[11px] text-[#555]">
                           {formatTime(item.start_time)}{item.end_time ? ` – ${formatTime(item.end_time)}` : ''}
                           {item.location ? ` · ${item.location}` : ''}
                         </p>
-                        {item.description && <p className="mt-1 text-xs text-slate-600">{item.description}</p>}
+                        {item.description && <p className="mt-1 text-xs text-[#666]">{item.description}</p>}
                       </div>
-                      <button type="button" onClick={() => setExpandedId(null)} className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700">
-                        ×
-                      </button>
+                      <button type="button" onClick={() => setExpandedId(null)}
+                        className="text-base leading-none text-[#444] hover:text-[#fafafa]">×</button>
                     </div>
                     <CommentThread itemId={item.id} token={authToken} shareToken={permission === 'view' ? shareToken : null} />
                   </div>

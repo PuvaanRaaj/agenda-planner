@@ -4,15 +4,19 @@
 
 @layer base {
   html {
-    @apply bg-slate-50 text-slate-900;
+    background-color: #111111;
+    color: #fafafa;
   }
 
   ::selection {
-    @apply bg-blue-100 text-slate-900;
+    background-color: #fafafa;
+    color: #111111;
   }
 
+  /* Remove default date/time input calendar icon color weirdness on dark */
   input[type='date']::-webkit-calendar-picker-indicator,
   input[type='time']::-webkit-calendar-picker-indicator {
-    @apply opacity-50;
+    filter: invert(1);
+    opacity: 0.4;
   }
 }

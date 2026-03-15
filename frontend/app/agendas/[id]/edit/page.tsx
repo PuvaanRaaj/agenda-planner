@@ -6,9 +6,8 @@ import { getSupabase } from '@/lib/supabase';
 import { agendasApi, shareApi, type Agenda, type AgendaMember } from '@/lib/api';
 import TopNav from '@/components/TopNav';
 
-const INPUT =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
-const LABEL = 'mb-1.5 block text-xs font-medium text-slate-700';
+const INPUT = 'w-full rounded-md border border-[#222222] bg-[#161616] px-3 py-2 text-sm text-[#fafafa] placeholder:text-[#444] focus:border-[#444] focus:outline-none';
+const LABEL = 'mb-1.5 block text-[11px] font-medium text-[#666]';
 
 export default function EditAgendaPage() {
   const params = useParams();
@@ -31,10 +30,7 @@ export default function EditAgendaPage() {
     (async () => {
       const supabase = getSupabase();
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        router.push('/login');
-        return;
-      }
+      if (!session?.access_token) { router.push('/login'); return; }
       setToken(session.access_token);
       setUserId(session.user.id);
       try {
@@ -87,21 +83,19 @@ export default function EditAgendaPage() {
     if (!token) return;
     try {
       await shareApi.updateMember(id, memberId, { role }, token);
-      setMembers((ms) => ms.map((m) => (m.id === memberId ? { ...m, role } : m)));
-    } catch {
-      /* ignore */
-    }
+      setMembers((ms) => ms.map((m) => m.id === memberId ? { ...m, role } : m));
+    } catch { /* ignore */ }
   }
 
   const isOwner = agenda?.owner_id === userId;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-[#111111]">
         <TopNav />
         <div className="mx-auto max-w-[480px] px-5 pt-10">
-          <div className="mb-3 h-5 w-32 animate-pulse rounded bg-slate-200" />
-          <div className="h-10 w-full animate-pulse rounded bg-slate-100" />
+          <div className="mb-3 h-5 w-32 animate-pulse rounded bg-[#161616]" />
+          <div className="h-10 w-full animate-pulse rounded bg-[#161616]" />
         </div>
       </div>
     );
@@ -109,27 +103,27 @@ export default function EditAgendaPage() {
 
   if (!agenda) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-[#111111]">
         <TopNav />
         <div className="flex min-h-[40vh] items-center justify-center">
-          <p className="text-sm text-slate-600">Agenda not found.</p>
+          <p className="text-sm text-[#555]">Agenda not found.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#111111]">
       <TopNav breadcrumb={agenda.title} />
       <div className="mx-auto max-w-[480px] px-5 py-8">
-        <h1 className="mb-6 text-lg font-semibold tracking-tight text-slate-900">Edit agenda</h1>
+        <h1 className="mb-6 text-lg font-semibold tracking-tight text-[#fafafa]">Edit agenda</h1>
         <form onSubmit={handleSave} className="flex flex-col gap-4">
           <div>
             <label className={LABEL}>Title</label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} required className={INPUT} />
           </div>
           <div>
-            <label className={LABEL}>Description <span className="text-slate-400">(optional)</span></label>
+            <label className={LABEL}>Description <span className="text-[#444]">(optional)</span></label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={INPUT} />
           </div>
           <div>
@@ -140,85 +134,66 @@ export default function EditAgendaPage() {
               <option value="public">Public</option>
             </select>
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-xs text-red-400">{error}</p>}
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
-            >
+            <button type="submit" disabled={saving}
+              className="rounded-md bg-[#fafafa] px-4 py-2 text-sm font-semibold text-[#111] hover:bg-[#e5e5e5] disabled:opacity-40 transition-colors">
               {saving ? 'Saving…' : 'Save changes'}
             </button>
-            <button
-              type="button"
-              onClick={() => router.push(`/agendas/${id}`)}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-            >
+            <button type="button" onClick={() => router.push(`/agendas/${id}`)}
+              className="rounded-md px-4 py-2 text-sm text-[#555] hover:bg-[#161616] hover:text-[#fafafa] transition-colors">
               Cancel
             </button>
           </div>
         </form>
 
-        <div className="my-8 h-px bg-slate-200" />
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Members</p>
+        {/* Members section */}
+        <div className="my-6 h-px bg-[#1f1f1f]" />
+        <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#555]">Members</p>
         {(members ?? []).length === 0 ? (
-          <p className="text-sm text-slate-500">No members yet. Share the agenda to add members.</p>
+          <p className="text-xs text-[#444]">No members yet. Share the agenda to add members.</p>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="rounded-lg border border-[#1f1f1f] overflow-hidden">
             {(members ?? []).map((m) => (
-              <div
-                key={m.id}
-                className="flex items-center justify-between border-b border-slate-100 px-4 py-3 last:border-b-0"
-              >
-                <p className="text-sm font-medium text-slate-900">{m.name || m.email}</p>
+              <div key={m.id} className="flex items-center justify-between border-b border-[#1a1a1a] px-4 py-2.5 last:border-b-0">
+                <p className="text-sm text-[#fafafa]">{m.name || m.email}</p>
                 {isOwner ? (
                   <select
                     value={m.role}
                     onChange={(e) => handleRoleChange(m.user_id, e.target.value)}
-                    className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-700 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    className="rounded border border-[#2a2a2a] bg-[#161616] px-2 py-1 text-[11px] text-[#888] focus:outline-none"
                   >
                     <option value="viewer">viewer</option>
                     <option value="commenter">commenter</option>
                     <option value="editor">editor</option>
                   </select>
                 ) : (
-                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-                    {m.role}
-                  </span>
+                  <span className="rounded-full border border-[#2a2a2a] px-2 py-0.5 text-[10px] font-medium text-[#666]">{m.role}</span>
                 )}
               </div>
             ))}
           </div>
         )}
 
+        {/* Delete section (owner only) */}
         {isOwner && (
           <>
-            <div className="my-8 h-px bg-slate-200" />
+            <div className="my-6 h-px bg-[#1f1f1f]" />
             {confirmDelete ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-slate-600">Delete this agenda?</span>
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="text-sm font-medium text-red-600 hover:underline disabled:opacity-40"
-                >
+                <span className="text-xs text-[#555]">Delete this agenda?</span>
+                <button type="button" onClick={handleDelete} disabled={deleting}
+                  className="text-xs text-red-400 hover:underline disabled:opacity-40">
                   {deleting ? 'Deleting…' : 'Yes, delete'}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDelete(false)}
-                  className="text-sm font-medium text-slate-600 hover:text-slate-900"
-                >
+                <button type="button" onClick={() => setConfirmDelete(false)}
+                  className="text-xs text-[#555] hover:text-[#fafafa]">
                   Cancel
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => setConfirmDelete(true)}
-                className="text-sm font-medium text-red-600 hover:underline"
-              >
+              <button type="button" onClick={() => setConfirmDelete(true)}
+                className="text-xs text-red-400 hover:underline">
                 Delete agenda
               </button>
             )}

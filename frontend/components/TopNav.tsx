@@ -10,28 +10,26 @@ type Props = {
 
 export default function TopNav({ right, breadcrumb, userInitial }: Props) {
   return (
-    <nav className="sticky top-0 z-10 flex h-12 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:px-5">
-      <div className="flex min-w-0 items-center gap-2">
-        <Link href="/dashboard" className="flex shrink-0 items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600">
-            <span className="text-xs font-bold text-white">A</span>
+    <nav className="sticky top-0 z-10 flex h-11 items-center justify-between border-b border-[#1a1a1a] bg-[#0d0d0d] px-5">
+      <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="flex h-[22px] w-[22px] items-center justify-center rounded-[4px] bg-[#fafafa]">
+            <span className="text-[11px] font-bold text-[#111]">A</span>
           </div>
-          <span className="text-sm font-semibold text-slate-800">Agenda</span>
+          <span className="text-sm font-semibold text-[#fafafa]">Agenda</span>
         </Link>
         {breadcrumb && (
           <>
-            <span className="text-slate-300">/</span>
-            <span className="truncate text-sm font-medium text-slate-600 max-w-[200px]">
-              {breadcrumb}
-            </span>
+            <span className="text-[#333]">/</span>
+            <span className="text-sm text-[#fafafa] font-medium truncate max-w-[200px]">{breadcrumb}</span>
           </>
         )}
       </div>
       <div className="flex items-center gap-2">
         {right}
         {userInitial && (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-xs font-medium text-slate-600">
-            {userInitial}
+          <div className="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-[#2a2a2a] bg-[#1f1f1f]">
+            <span className="text-[10px] font-medium text-[#888]">{userInitial}</span>
           </div>
         )}
       </div>
