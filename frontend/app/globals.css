@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #111111;
+    color: #fafafa;
+  }
+
+  ::selection {
+    background-color: #fafafa;
+    color: #111111;
+  }
+
+  /* Remove default date/time input calendar icon color weirdness on dark */
+  input[type='date']::-webkit-calendar-picker-indicator,
+  input[type='time']::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.4;
+  }
+}
