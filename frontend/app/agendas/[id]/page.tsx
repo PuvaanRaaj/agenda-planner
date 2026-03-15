@@ -10,8 +10,8 @@ import CommentThread from '@/components/CommentThread';
 import ShareModal from '@/components/ShareModal';
 
 const INPUT =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
-const LABEL = 'mb-1 block text-xs font-medium text-slate-700';
+  'w-full rounded-lg border border-slate-600 bg-slate-800/50 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-offset-slate-950';
+const LABEL = 'mb-1 block text-xs font-medium text-slate-400';
 
 function formatTime(t: string) {
   const [h, m] = t.split(':');
@@ -182,16 +182,16 @@ export default function AgendaDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-950">
         <TopNav />
-        <div className="flex gap-1 border-b border-slate-200 bg-white px-4 py-3">
+        <div className="flex gap-1 border-b border-slate-800 bg-slate-900/50 px-4 py-3">
           {Array.from({ length: 7 }, (_, i) => (
-            <div key={i} className="h-12 flex-1 animate-pulse rounded-lg bg-slate-100" />
+            <div key={i} className="h-12 flex-1 animate-pulse rounded-lg bg-slate-800" />
           ))}
         </div>
         <div className="space-y-2 px-4 py-4">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-12 animate-pulse rounded-lg bg-slate-100" />
+            <div key={i} className="h-12 animate-pulse rounded-lg bg-slate-800" />
           ))}
         </div>
       </div>
@@ -200,14 +200,14 @@ export default function AgendaDetailPage() {
 
   if (!agenda) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-950">
         <TopNav />
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
-          <p className="text-sm text-slate-600">Agenda not found.</p>
+          <p className="text-sm text-slate-400">Agenda not found.</p>
           <button
             type="button"
             onClick={() => router.push('/dashboard')}
-            className="text-sm font-medium text-primary-600 hover:text-primary-700 underline"
+            className="text-sm font-medium text-primary-400 hover:text-primary-300 underline"
           >
             Back to dashboard
           </button>
@@ -221,14 +221,14 @@ export default function AgendaDetailPage() {
       <button
         type="button"
         onClick={() => setShowShare(true)}
-        className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+        className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-slate-100"
       >
         Share
       </button>
       <button
         type="button"
         onClick={() => router.push(`/agendas/${id}/edit`)}
-        className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+        className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:bg-slate-800 hover:text-slate-100"
       >
         Edit
       </button>
@@ -236,7 +236,7 @@ export default function AgendaDetailPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-950">
       <TopNav breadcrumb={agenda.title} right={navRight} userInitial={(userEmail[0] ?? '?').toUpperCase()} />
 
       <WeekStrip selectedDate={selectedDate} onSelectDate={handleDateSelect} itemDates={itemDates} />
@@ -248,7 +248,7 @@ export default function AgendaDetailPage() {
           <button
             type="button"
             onClick={() => setShowAddItem(true)}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-slate-400 hover:bg-slate-50"
+            className="rounded-lg border border-slate-600 px-3 py-1.5 text-sm font-medium text-slate-400 transition hover:border-slate-500 hover:bg-slate-800/50"
           >
             + Add item
           </button>
@@ -257,7 +257,7 @@ export default function AgendaDetailPage() {
 
       {/* Add item form */}
       {showAddItem && (
-        <form onSubmit={handleAddItem} className="mx-4 mb-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <form onSubmit={handleAddItem} className="mx-4 mb-3 rounded-xl border border-slate-800 bg-slate-900/50 p-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <label className={LABEL}>Title</label>
@@ -272,24 +272,24 @@ export default function AgendaDetailPage() {
               <input type="time" required value={newItem.start_time} onChange={(e) => setNewItem((n) => ({ ...n, start_time: e.target.value }))} className={INPUT} />
             </div>
             <div>
-              <label className={LABEL}>End time <span className="text-slate-400">(optional)</span></label>
+              <label className={LABEL}>End time <span className="text-slate-500">(optional)</span></label>
               <input type="time" value={newItem.end_time} onChange={(e) => setNewItem((n) => ({ ...n, end_time: e.target.value }))} className={INPUT} />
             </div>
             <div>
-              <label className={LABEL}>Location <span className="text-slate-400">(optional)</span></label>
+              <label className={LABEL}>Location <span className="text-slate-500">(optional)</span></label>
               <input value={newItem.location} onChange={(e) => setNewItem((n) => ({ ...n, location: e.target.value }))} className={INPUT} placeholder="Room A" />
             </div>
             <div className="col-span-2">
-              <label className={LABEL}>Description <span className="text-slate-400">(optional)</span></label>
+              <label className={LABEL}>Description <span className="text-slate-500">(optional)</span></label>
               <textarea rows={2} value={newItem.description} onChange={(e) => setNewItem((n) => ({ ...n, description: e.target.value }))} className={INPUT} />
             </div>
             <div className="col-span-2 flex flex-col gap-2">
-              {saveError && <p className="text-sm text-red-600">{saveError}</p>}
+              {saveError && <p className="text-sm text-red-400">{saveError}</p>}
               <div className="flex gap-2">
-                <button type="submit" className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 transition-colors">
+                <button type="submit" className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 transition-colors focus:ring-offset-slate-950">
                   Add item
                 </button>
-                <button type="button" onClick={() => { setShowAddItem(false); setSaveError(''); }} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                <button type="button" onClick={() => { setShowAddItem(false); setSaveError(''); }} className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 transition-colors">
                   Cancel
                 </button>
               </div>
@@ -300,7 +300,7 @@ export default function AgendaDetailPage() {
 
       {/* Timeline */}
       <div className="relative px-4 py-2">
-        <div className="pointer-events-none absolute bottom-0 top-0 w-px bg-slate-200" style={{ left: '60px' }} />
+        <div className="pointer-events-none absolute bottom-0 top-0 w-px bg-slate-800" style={{ left: '60px' }} />
 
         {dayItems.length === 0 && !showAddItem && (
           <p className="py-8 text-center text-sm text-slate-500">No items for this day.</p>
@@ -321,15 +321,15 @@ export default function AgendaDetailPage() {
                   onClick={() => handleItemClick(item)}
                   className={`w-full rounded-t-lg border px-3 py-2 text-left transition-colors ${
                     isExpanded
-                      ? 'border-slate-200 border-b-0 bg-white shadow-sm'
-                      : 'rounded-b-lg border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                      ? 'border-slate-700 border-b-0 bg-slate-900/50'
+                      : 'rounded-b-lg border-slate-800 bg-slate-900/50 hover:border-slate-700 hover:bg-slate-800/50'
                   }`}
                 >
-                  <p className={`text-sm font-medium ${isExpanded ? 'font-semibold text-slate-900' : 'text-slate-800'}`}>
+                  <p className={`text-sm font-medium ${isExpanded ? 'font-semibold text-slate-100' : 'text-slate-200'}`}>
                     {item.title}
                   </p>
                   {(item.end_time || item.location) && (
-                    <p className={`mt-0.5 text-xs ${isExpanded ? 'text-slate-500' : 'text-slate-500'}`}>
+                    <p className="mt-0.5 text-xs text-slate-500">
                       {item.end_time ? `${formatTime(item.start_time)} – ${formatTime(item.end_time)}` : formatTime(item.start_time)}
                       {item.location ? ` · ${item.location}` : ''}
                     </p>
@@ -337,7 +337,7 @@ export default function AgendaDetailPage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="rounded-b-lg border border-t-0 border-slate-200 bg-slate-50 overflow-hidden">
+                  <div className="rounded-b-lg border border-t-0 border-slate-700 bg-slate-900/50 overflow-hidden">
                     {isEditing && editValues ? (
                       /* Edit form */
                       <div className="p-3">
@@ -367,23 +367,23 @@ export default function AgendaDetailPage() {
                             <textarea rows={2} value={editValues.description} onChange={(e) => setEditValues((v) => v ? { ...v, description: e.target.value } : v)} className={INPUT} />
                           </div>
                         </div>
-                        {saveError && <p className="mb-2 text-sm text-red-600">{saveError}</p>}
+                        {saveError && <p className="mb-2 text-sm text-red-400">{saveError}</p>}
                         <div className="flex gap-2">
                           <button type="button" onClick={() => handleSaveEdit(item)} disabled={saving}
-                            className="rounded-lg bg-primary-600 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-40 transition-colors">
+                            className="rounded-lg bg-primary-500 px-3 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-40 transition-colors focus:ring-offset-slate-950">
                             {saving ? 'Saving…' : 'Save'}
                           </button>
                           <button type="button" onClick={() => { setEditingId(null); setSaveError(''); }}
-                            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors">
+                            className="rounded-lg border border-slate-600 px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 transition-colors">
                             Cancel
                           </button>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <div className="flex items-start justify-between border-b border-slate-200 px-4 py-3">
+                        <div className="flex items-start justify-between border-b border-slate-800 px-4 py-3">
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                            <p className="text-sm font-semibold text-slate-100">{item.title}</p>
                             <p className="text-xs text-slate-500">
                               {formatTime(item.start_time)}{item.end_time ? ` – ${formatTime(item.end_time)}` : ''}
                               {item.location ? ` · ${item.location}` : ''}
@@ -392,15 +392,15 @@ export default function AgendaDetailPage() {
                           <div className="flex items-center gap-3">
                             {canEdit && (
                               <>
-                                <button type="button" onClick={() => startEdit(item)} className="text-xs font-medium text-slate-600 underline hover:text-slate-900">
+                                <button type="button" onClick={() => startEdit(item)} className="text-xs font-medium text-slate-400 underline hover:text-slate-200">
                                   Edit
                                 </button>
-                                <button type="button" onClick={() => handleDeleteItem(item.id)} className="text-xs font-medium text-red-600 hover:underline">
+                                <button type="button" onClick={() => handleDeleteItem(item.id)} className="text-xs font-medium text-red-400 hover:underline">
                                   Delete
                                 </button>
                               </>
                             )}
-                            <button type="button" onClick={() => setExpandedId(null)} className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700">
+                            <button type="button" onClick={() => setExpandedId(null)} className="rounded p-1 text-slate-500 hover:bg-slate-800 hover:text-slate-300">
                               ×
                             </button>
                           </div>

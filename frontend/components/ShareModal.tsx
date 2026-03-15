@@ -10,7 +10,7 @@ type Props = {
 };
 
 const inputClass =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 cursor-pointer';
+  'w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 cursor-pointer';
 
 export default function ShareModal({ agendaId, token, onClose }: Props) {
   const [permission, setPermission] = useState<'view' | 'comment' | 'edit'>('view');
@@ -43,20 +43,20 @@ export default function ShareModal({ agendaId, token, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-5 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-sm rounded-xl border border-slate-700 bg-slate-900 p-5 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-base font-semibold text-slate-900">Share agenda</h2>
+          <h2 className="text-base font-semibold text-slate-100">Share agenda</h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-800 hover:text-slate-300"
           >
             ×
           </button>
         </div>
         <div className="mb-3">
-          <label className="mb-1.5 block text-xs font-medium text-slate-700">Permission level</label>
+          <label className="mb-1.5 block text-xs font-medium text-slate-400">Permission level</label>
           <select
             value={permission}
             onChange={(e) => setPermission(e.target.value as 'view' | 'comment' | 'edit')}
@@ -67,22 +67,22 @@ export default function ShareModal({ agendaId, token, onClose }: Props) {
             <option value="edit">Can edit</option>
           </select>
         </div>
-        {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="mb-3 text-sm text-red-400">{error}</p>}
         <button
           type="button"
           onClick={handleGenerate}
           disabled={loading}
-          className="mb-3 w-full rounded-lg bg-primary-600 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 disabled:opacity-50"
+          className="mb-3 w-full rounded-lg bg-primary-500 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-600 disabled:opacity-50"
         >
           {loading ? 'Generating…' : 'Generate link'}
         </button>
         {generated && (
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
-            <span className="truncate font-mono text-xs text-slate-600">{generated}</span>
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5">
+            <span className="truncate font-mono text-xs text-slate-400">{generated}</span>
             <button
               type="button"
               onClick={handleCopy}
-              className="shrink-0 text-xs font-medium text-primary-600 hover:text-primary-700 underline"
+              className="shrink-0 text-xs font-medium text-primary-400 hover:text-primary-300 underline"
             >
               {copied ? 'Copied!' : 'Copy'}
             </button>

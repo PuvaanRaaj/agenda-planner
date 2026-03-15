@@ -91,16 +91,16 @@ export default function ShareViewPage() {
   }, [selectedDate]);
 
   const nav = (
-    <div className="flex h-12 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm sm:px-5">
+    <div className="flex h-12 items-center justify-between border-b border-slate-800 bg-slate-900/50 px-4 sm:px-5">
       <div className="flex min-w-0 items-center gap-2">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-600">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-500">
           <span className="text-xs font-bold text-white">A</span>
         </div>
         <span className="text-sm text-slate-500">Agenda</span>
         {agenda && (
           <>
-            <span className="text-slate-300">/</span>
-            <span className="truncate text-sm font-medium text-slate-700 max-w-[200px]">{agenda.title}</span>
+            <span className="text-slate-600">/</span>
+            <span className="max-w-[200px] truncate text-sm font-medium text-slate-300">{agenda.title}</span>
           </>
         )}
       </div>
@@ -110,16 +110,16 @@ export default function ShareViewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-950">
         {nav}
-        <div className="flex h-12 gap-1 border-b border-slate-200 bg-white px-4 py-2">
+        <div className="flex h-12 gap-1 border-b border-slate-800 bg-slate-900/50 px-4 py-2">
           {Array.from({ length: 7 }, (_, i) => (
-            <div key={i} className="h-full flex-1 animate-pulse rounded-lg bg-slate-100" />
+            <div key={i} className="h-full flex-1 animate-pulse rounded-lg bg-slate-800" />
           ))}
         </div>
         <div className="space-y-2 px-4 py-4">
           {[0, 1].map((i) => (
-            <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-100" />
+            <div key={i} className="h-10 animate-pulse rounded-lg bg-slate-800" />
           ))}
         </div>
       </div>
@@ -128,9 +128,9 @@ export default function ShareViewPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50">
-        <p className="text-sm text-slate-600">{error}</p>
-        <a href="/" className="text-sm font-medium text-primary-600 hover:text-primary-700 underline">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-950">
+        <p className="text-sm text-slate-400">{error}</p>
+        <a href="/" className="text-sm font-medium text-primary-400 hover:text-primary-300 underline">
           Go home
         </a>
       </div>
@@ -139,17 +139,17 @@ export default function ShareViewPage() {
 
   if (needsAuth) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-slate-950">
         {nav}
         <div className="flex min-h-[70vh] flex-col items-center justify-center gap-5 px-5 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-slate-100">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-slate-800">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-slate-500">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
             </svg>
           </div>
           <div>
-            <p className="mb-1.5 text-base font-semibold text-slate-900">Sign in to access this link</p>
-            <p className="text-sm text-slate-600">
+            <p className="mb-1.5 text-base font-semibold text-slate-100">Sign in to access this link</p>
+            <p className="text-sm text-slate-400">
               This shared agenda requires you to be signed in
               {permission === 'edit' ? ' to view and edit.' : ' to view and comment.'}
             </p>
@@ -157,13 +157,13 @@ export default function ShareViewPage() {
           <div className="flex w-full max-w-[240px] flex-col gap-2">
             <a
               href={`/login?redirect=/share/${shareToken}`}
-              className="rounded-lg bg-primary-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
+              className="rounded-lg bg-primary-500 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary-600 transition-colors"
             >
               Sign in
             </a>
             <a
               href={`/signup?redirect=/share/${shareToken}`}
-              className="rounded-lg border border-slate-300 px-4 py-2.5 text-center text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              className="rounded-lg border border-slate-600 px-4 py-2.5 text-center text-sm font-medium text-slate-400 hover:bg-slate-800 transition-colors"
             >
               Create account
             </a>
@@ -175,9 +175,9 @@ export default function ShareViewPage() {
 
   if (!agenda) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-50">
-        <p className="text-sm text-slate-600">This link is invalid or has expired.</p>
-        <a href="/" className="text-sm font-medium text-primary-600 hover:text-primary-700 underline">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-slate-950">
+        <p className="text-sm text-slate-400">This link is invalid or has expired.</p>
+        <a href="/" className="text-sm font-medium text-primary-400 hover:text-primary-300 underline">
           Go home
         </a>
       </div>
@@ -185,7 +185,7 @@ export default function ShareViewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-950">
       {nav}
 
       <WeekStrip selectedDate={selectedDate} onSelectDate={(d) => { setSelectedDate(d); setExpandedId(null); }} itemDates={itemDates} />
@@ -195,7 +195,7 @@ export default function ShareViewPage() {
       </div>
 
       <div className="relative px-4 py-2">
-        <div className="pointer-events-none absolute bottom-0 top-0 w-px bg-slate-200" style={{ left: '60px' }} />
+        <div className="pointer-events-none absolute bottom-0 top-0 w-px bg-slate-800" style={{ left: '60px' }} />
 
         {dayItems.length === 0 && (
           <p className="py-8 text-center text-sm text-slate-500">No items for this day.</p>
@@ -214,11 +214,11 @@ export default function ShareViewPage() {
                   onClick={() => setExpandedId(isExpanded ? null : item.id)}
                   className={`w-full rounded-t-lg border px-3 py-2 text-left transition-colors ${
                     isExpanded
-                      ? 'border-slate-200 border-b-0 bg-white shadow-sm'
-                      : 'rounded-b-lg border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                      ? 'border-slate-700 border-b-0 bg-slate-900/50'
+                      : 'rounded-b-lg border-slate-800 bg-slate-900/50 hover:border-slate-700 hover:bg-slate-800/50'
                   }`}
                 >
-                  <p className={`text-sm font-medium ${isExpanded ? 'font-semibold text-slate-900' : 'text-slate-800'}`}>{item.title}</p>
+                  <p className={`text-sm font-medium ${isExpanded ? 'font-semibold text-slate-100' : 'text-slate-200'}`}>{item.title}</p>
                   {(item.end_time || item.location) && (
                     <p className="mt-0.5 text-xs text-slate-500">
                       {item.end_time ? `${formatTime(item.start_time)} – ${formatTime(item.end_time)}` : ''}
@@ -227,17 +227,17 @@ export default function ShareViewPage() {
                   )}
                 </button>
                 {isExpanded && (
-                  <div className="rounded-b-lg border border-t-0 border-slate-200 bg-slate-50 overflow-hidden">
-                    <div className="flex items-start justify-between border-b border-slate-200 px-4 py-3">
+                  <div className="rounded-b-lg border border-t-0 border-slate-700 bg-slate-900/50 overflow-hidden">
+                    <div className="flex items-start justify-between border-b border-slate-800 px-4 py-3">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                        <p className="text-sm font-semibold text-slate-100">{item.title}</p>
                         <p className="text-xs text-slate-500">
                           {formatTime(item.start_time)}{item.end_time ? ` – ${formatTime(item.end_time)}` : ''}
                           {item.location ? ` · ${item.location}` : ''}
                         </p>
-                        {item.description && <p className="mt-1 text-xs text-slate-600">{item.description}</p>}
+                        {item.description && <p className="mt-1 text-xs text-slate-400">{item.description}</p>}
                       </div>
-                      <button type="button" onClick={() => setExpandedId(null)} className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700">
+                      <button type="button" onClick={() => setExpandedId(null)} className="rounded p-1 text-slate-500 hover:bg-slate-800 hover:text-slate-300">
                         ×
                       </button>
                     </div>

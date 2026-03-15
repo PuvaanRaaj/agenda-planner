@@ -11,7 +11,7 @@ type Props = {
 };
 
 const inputClass =
-  'flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
+  'flex-1 rounded-lg border border-slate-600 bg-slate-800/50 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
 
 export default function CommentThread({ itemId, token, shareToken }: Props) {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -61,8 +61,8 @@ export default function CommentThread({ itemId, token, shareToken }: Props) {
   if (loading) {
     return (
       <div className="space-y-2 px-4 py-3">
-        <div className="h-3 w-3/4 animate-pulse rounded bg-slate-200" />
-        <div className="h-3 w-1/2 animate-pulse rounded bg-slate-100" />
+        <div className="h-3 w-3/4 animate-pulse rounded bg-slate-700" />
+        <div className="h-3 w-1/2 animate-pulse rounded bg-slate-800" />
       </div>
     );
   }
@@ -75,7 +75,7 @@ export default function CommentThread({ itemId, token, shareToken }: Props) {
       {comments.length === 0 && <p className="mb-3 text-sm text-slate-500">No comments yet.</p>}
       <div className="mb-3 space-y-3">
         {comments.map((c) => (
-          <div key={c.id} className="rounded-lg bg-slate-50 p-2.5">
+          <div key={c.id} className="rounded-lg bg-slate-800/50 p-2.5">
             <div className="mb-1 flex items-center gap-2">
               <span className="text-xs text-slate-500">
                 {c.name || c.email || 'Anonymous'} ·{' '}
@@ -85,13 +85,13 @@ export default function CommentThread({ itemId, token, shareToken }: Props) {
                 <button
                   type="button"
                   onClick={() => handleDelete(c.id)}
-                  className="text-xs text-slate-500 underline hover:text-red-600"
+                  className="text-xs text-slate-500 underline hover:text-red-400"
                 >
                   delete
                 </button>
               )}
             </div>
-            <p className="text-sm text-slate-800">{c.body}</p>
+            <p className="text-sm text-slate-200">{c.body}</p>
           </div>
         ))}
       </div>
@@ -106,7 +106,7 @@ export default function CommentThread({ itemId, token, shareToken }: Props) {
           <button
             type="submit"
             disabled={posting || !body.trim()}
-            className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-700 disabled:opacity-50"
+            className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-600 disabled:opacity-50"
           >
             Post
           </button>
