@@ -72,6 +72,12 @@ func main() {
 	})
 	r.With(auth).Delete("/comments/{commentId}", h.DeleteComment)
 
+	r.Route("/billing", func(r chi.Router) {
+		r.With(auth).Post("/checkout", h.CreateCheckout)
+		r.With(auth).Post("/portal", h.CustomerPortal)
+		r.Post("/webhook", h.StripeWebhook)
+	})
+
 	log.Printf("Listening on :%s", port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
