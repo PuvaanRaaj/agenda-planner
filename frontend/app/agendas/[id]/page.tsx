@@ -381,7 +381,7 @@ export default function AgendaDetailPage() {
                               {item.location ? ` · ${item.location}` : ''}
                             </p>
                             {item.description && (
-                              <p className="mt-1 text-xs text-[#777]">{item.description}</p>
+                              <p className="mt-1 whitespace-pre-wrap text-xs text-[#777]">{item.description}</p>
                             )}
                           </div>
                           <div className="flex items-center gap-3">

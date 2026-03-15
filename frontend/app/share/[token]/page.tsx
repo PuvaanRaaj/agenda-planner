@@ -227,7 +227,7 @@ export default function ShareViewPage() {
                           {formatTime(item.start_time)}{item.end_time ? ` – ${formatTime(item.end_time)}` : ''}
                           {item.location ? ` · ${item.location}` : ''}
                         </p>
-                        {item.description && <p className="mt-1 text-xs text-[#666]">{item.description}</p>}
+                        {item.description && <p className="mt-1 whitespace-pre-wrap text-xs text-[#666]">{item.description}</p>}
                       </div>
                       <button type="button" onClick={() => setExpandedId(null)}
                         className="text-base leading-none text-[#444] hover:text-[#fafafa]">×</button>
