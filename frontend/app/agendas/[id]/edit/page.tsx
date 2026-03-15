@@ -39,7 +39,7 @@ export default function EditAgendaPage() {
           shareApi.members(id, session.access_token),
         ]);
         setAgenda(a);
-        setMembers(m);
+        setMembers(m ?? []);
         setTitle(a.title);
         setDescription(a.description || '');
         setVisibility(a.visibility || 'private');

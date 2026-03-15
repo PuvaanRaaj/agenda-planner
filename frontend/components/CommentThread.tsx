@@ -19,7 +19,7 @@ export default function CommentThread({ itemId, token, shareToken }: Props) {
   useEffect(() => {
     setLoading(true);
     commentsApi.list(itemId, token ?? undefined, shareToken ?? undefined)
-      .then(setComments)
+      .then((c) => setComments(c ?? []))
       .catch(() => setComments([]))
       .finally(() => setLoading(false));
   }, [itemId, token, shareToken]);
