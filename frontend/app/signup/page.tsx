@@ -30,7 +30,7 @@ function SignupForm() {
       const session = data.session;
       if (session && data.user) {
         await authApi.sync({ id: data.user.id, email: data.user.email ?? '', name: data.user.user_metadata?.name }, session.access_token);
-        router.push(redirect);
+        router.push(redirect === '/dashboard' ? '/onboarding' : redirect);
         router.refresh();
       } else {
         setConfirmed(true);
