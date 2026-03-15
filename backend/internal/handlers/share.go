@@ -20,10 +20,11 @@ func (h *Handler) ShareByToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var agendaID string
+	var permission string
 	var expiresAt *time.Time
 	err := h.DB.QueryRow(`
-		SELECT agenda_id, expires_at FROM share_tokens WHERE token = $1
-	`, token).Scan(&agendaID, &expiresAt)
+		SELECT agenda_id, permission, expires_at FROM share_tokens WHERE token = $1
+	`, token).Scan(&agendaID, &permission, &expiresAt)
 	if err == sql.ErrNoRows {
 		jsonError(w, "not found", http.StatusNotFound)
 		return
@@ -68,7 +69,7 @@ func (h *Handler) ShareByToken(w http.ResponseWriter, r *http.Request) {
 		a.Items = append(a.Items, item)
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(a)
+	json.NewEncoder(w).Encode(map[string]interface{}{"permission": permission, "agenda": a})
 }
 
 func (h *Handler) CreateShareToken(w http.ResponseWriter, r *http.Request) {

@@ -84,8 +84,10 @@ export const itemsApi = {
     api<void>(`/agendas/${agendaId}/items/${itemId}`, { method: 'DELETE', token }),
 };
 
+export type ShareResponse = { permission: string; agenda: Agenda };
+
 export const shareApi = {
-  byToken: (token: string) => api<Agenda>(`/share/${token}`),
+  byToken: (token: string) => api<ShareResponse>(`/share/${token}`),
   createToken: (agendaId: string, body: { permission: string; expires_at?: string }, token: string) =>
     api<{ token: string }>(`/agendas/${agendaId}/share`, { method: 'POST', body: JSON.stringify(body), token }),
   members: (agendaId: string, token: string) => api<AgendaMember[]>(`/agendas/${agendaId}/members`, { token }),

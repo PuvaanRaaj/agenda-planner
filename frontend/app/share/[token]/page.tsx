@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { getSupabase } from '@/lib/supabase';
 import { shareApi, type Agenda } from '@/lib/api';
 import WeekStrip from '@/components/WeekStrip';
 import CommentThread from '@/components/CommentThread';
@@ -12,13 +13,22 @@ function formatTime(t: string) {
   return `${hour % 12 || 12}:${m}${hour >= 12 ? 'pm' : 'am'}`;
 }
 
-export default function ShareViewPage() {
-  // AgendaItem type not imported — item shapes inferred from agenda.items
+const PERMISSION_LABEL: Record<string, string> = {
+  view: 'View-only link',
+  comment: 'Comment link',
+  edit: 'Edit link',
+};
 
+export default function ShareViewPage() {
   const params = useParams();
+  const router = useRouter();
   const shareToken = params.token as string;
+
   const [agenda, setAgenda] = useState<Agenda | null>(null);
+  const [permission, setPermission] = useState<string>('view');
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [needsAuth, setNeedsAuth] = useState(false);
   const [error, setError] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => {
     const d = new Date();
@@ -30,39 +40,78 @@ export default function ShareViewPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    shareApi.byToken(shareToken)
-      .then(setAgenda)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Invalid or expired link'))
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const { permission: perm, agenda: a } = await shareApi.byToken(shareToken);
+        setPermission(perm);
+
+        if (perm === 'view') {
+          setAgenda(a);
+          setLoading(false);
+          return;
+        }
+
+        // comment / edit: require the user to be signed in
+        const supabase = getSupabase();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          setNeedsAuth(true);
+          setLoading(false);
+          return;
+        }
+        setAuthToken(session.access_token);
+        setAgenda(a);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Invalid or expired link');
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [shareToken]);
 
+  // Auto-jump to earliest item date when today has no items
   const items = useMemo(() => agenda?.items ?? [], [agenda]);
   const itemDates = useMemo(() => new Set(items.map((i) => i.date)), [items]);
+  useEffect(() => {
+    if (items.length === 0) return;
+    setSelectedDate((cur) => {
+      if (items.some((i) => i.date === cur)) return cur;
+      return [...items].sort((a, b) => a.date.localeCompare(b.date))[0].date;
+    });
+  }, [items]);
+
   const dayItems = useMemo(
     () => items.filter((i) => i.date === selectedDate).sort((a, b) => a.start_time.localeCompare(b.start_time)),
     [items, selectedDate]
   );
-  // Note: The nav label is hardcoded "View-only link" because the `Agenda` type
-  // returned by byToken does not include the share token's permission level.
-  // This is an acceptable simplification — the permission level is enforced
-  // server-side (comment input is shown/hidden based on whether posting succeeds).
 
   const selectedDateLabel = useMemo(() => {
     const d = new Date(selectedDate + 'T00:00:00');
     return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   }, [selectedDate]);
 
+  const nav = (
+    <div className="flex h-11 items-center justify-between border-b border-[#1a1a1a] bg-[#0d0d0d] px-5">
+      <div className="flex items-center gap-2">
+        <div className="flex h-[22px] w-[22px] items-center justify-center rounded-[4px] bg-[#fafafa]">
+          <span className="text-[11px] font-bold text-[#111]">A</span>
+        </div>
+        <span className="text-[#444] text-sm">Agenda</span>
+        {agenda && (
+          <>
+            <span className="text-[#333]">/</span>
+            <span className="text-sm font-medium text-[#fafafa] truncate max-w-[200px]">{agenda.title}</span>
+          </>
+        )}
+      </div>
+      <span className="text-xs text-[#555]">{PERMISSION_LABEL[permission] ?? 'Shared link'}</span>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#111111]">
-        <div className="flex h-11 items-center border-b border-[#1a1a1a] bg-[#0d0d0d] px-5">
-          <div className="flex items-center gap-2">
-            <div className="flex h-[22px] w-[22px] items-center justify-center rounded-[4px] bg-[#fafafa]">
-              <span className="text-[11px] font-bold text-[#111]">A</span>
-            </div>
-            <span className="text-sm font-semibold text-[#fafafa]">Agenda</span>
-          </div>
-        </div>
+        {nav}
         <div className="flex h-11 gap-1 border-b border-[#1a1a1a] px-4 py-2">
           {Array.from({ length: 7 }, (_, i) => <div key={i} className="h-full flex-1 animate-pulse rounded bg-[#161616]" />)}
         </div>
@@ -73,10 +122,55 @@ export default function ShareViewPage() {
     );
   }
 
-  if (error || !agenda) {
+  if (error) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#111111]">
-        <p className="text-sm text-[#555]">{error || 'This link is invalid or has expired.'}</p>
+        <p className="text-sm text-[#555]">{error}</p>
+        <a href="/" className="text-sm text-[#555] underline hover:text-[#fafafa]">Go home</a>
+      </div>
+    );
+  }
+
+  if (needsAuth) {
+    return (
+      <div className="min-h-screen bg-[#111111]">
+        {nav}
+        <div className="flex min-h-[70vh] flex-col items-center justify-center gap-5 px-5 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#2a2a2a] bg-[#161616]">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[#888]">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          </div>
+          <div>
+            <p className="mb-1.5 text-base font-semibold text-[#fafafa]">Sign in to access this link</p>
+            <p className="text-sm text-[#555]">
+              This shared agenda requires you to be signed in
+              {permission === 'edit' ? ' to view and edit.' : ' to view and comment.'}
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 w-full max-w-[240px]">
+            <a
+              href={`/login?redirect=/share/${shareToken}`}
+              className="rounded-md bg-[#fafafa] px-4 py-2.5 text-sm font-semibold text-[#111] text-center hover:bg-[#e5e5e5] transition-colors"
+            >
+              Sign in
+            </a>
+            <a
+              href={`/signup?redirect=/share/${shareToken}`}
+              className="rounded-md border border-[#2a2a2a] px-4 py-2.5 text-sm text-[#888] text-center hover:border-[#444] hover:text-[#fafafa] transition-colors"
+            >
+              Create account
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!agenda) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-[#111111]">
+        <p className="text-sm text-[#555]">This link is invalid or has expired.</p>
         <a href="/" className="text-sm text-[#555] underline hover:text-[#fafafa]">Go home</a>
       </div>
     );
@@ -84,18 +178,7 @@ export default function ShareViewPage() {
 
   return (
     <div className="min-h-screen bg-[#111111]">
-      {/* Minimal nav — no auth actions */}
-      <div className="flex h-11 items-center justify-between border-b border-[#1a1a1a] bg-[#0d0d0d] px-5">
-        <div className="flex items-center gap-2">
-          <div className="flex h-[22px] w-[22px] items-center justify-center rounded-[4px] bg-[#fafafa]">
-            <span className="text-[11px] font-bold text-[#111]">A</span>
-          </div>
-          <span className="text-[#444] text-sm">Agenda</span>
-          <span className="text-[#333]">/</span>
-          <span className="text-sm font-medium text-[#fafafa] truncate max-w-[200px]">{agenda.title}</span>
-        </div>
-        <span className="text-xs text-[#555]">View-only link</span>
-      </div>
+      {nav}
 
       <WeekStrip selectedDate={selectedDate} onSelectDate={(d) => { setSelectedDate(d); setExpandedId(null); }} itemDates={itemDates} />
 
@@ -149,7 +232,7 @@ export default function ShareViewPage() {
                       <button type="button" onClick={() => setExpandedId(null)}
                         className="text-base leading-none text-[#444] hover:text-[#fafafa]">×</button>
                     </div>
-                    <CommentThread itemId={item.id} shareToken={shareToken} />
+                    <CommentThread itemId={item.id} token={authToken} shareToken={permission === 'view' ? shareToken : null} />
                   </div>
                 )}
               </div>

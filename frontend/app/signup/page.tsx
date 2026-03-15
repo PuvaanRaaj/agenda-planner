@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase';
 import { authApi } from '@/lib/api';
@@ -14,6 +14,8 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [confirmed, setConfirmed] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') ?? '/dashboard';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,7 +29,7 @@ export default function SignupPage() {
       const session = data.session;
       if (session && data.user) {
         await authApi.sync({ id: data.user.id, email: data.user.email ?? '', name: data.user.user_metadata?.name }, session.access_token);
-        router.push('/dashboard');
+        router.push(redirect);
         router.refresh();
       } else {
         setConfirmed(true);
@@ -93,7 +95,7 @@ export default function SignupPage() {
             <div className="my-5 h-px bg-[#1a1a1a]" />
             <p className="text-center text-xs text-[#555]">
               Already have an account?{' '}
-              <Link href="/login" className="text-[#888] underline hover:text-[#fafafa]">Sign in</Link>
+              <Link href={`/login?redirect=${encodeURIComponent(redirect)}`} className="text-[#888] underline hover:text-[#fafafa]">Sign in</Link>
             </p>
           </>
         )}

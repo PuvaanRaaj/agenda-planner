@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSupabase } from '@/lib/supabase';
 import { authApi } from '@/lib/api';
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') ?? '/dashboard';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,7 +27,7 @@ export default function LoginPage() {
       if (token && data.user) {
         await authApi.sync({ id: data.user.id, email: data.user.email ?? '', name: data.user.user_metadata?.name }, token);
       }
-      router.push('/dashboard');
+      router.push(redirect);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
@@ -73,7 +75,7 @@ export default function LoginPage() {
         <div className="my-5 h-px bg-[#1a1a1a]" />
         <p className="text-center text-xs text-[#555]">
           No account?{' '}
-          <Link href="/signup" className="text-[#888] underline hover:text-[#fafafa]">Sign up</Link>
+          <Link href={`/signup?redirect=${encodeURIComponent(redirect)}`} className="text-[#888] underline hover:text-[#fafafa]">Sign up</Link>
         </p>
       </div>
     </main>
