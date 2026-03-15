@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '@/lib/supabase';
-import { agendasApi, type Agenda } from '@/lib/api';
+import { agendasApi, userApi, type Agenda, type UserMe, PLAN_LIMITS, PLAN_LABELS } from '@/lib/api';
 import TopNav from '@/components/TopNav';
 
 function relativeTime(iso: string) {
@@ -20,8 +20,10 @@ function relativeTime(iso: string) {
 
 export default function DashboardPage() {
   const [agendas, setAgendas] = useState<Agenda[]>([]);
+  const [me, setMe] = useState<UserMe | null>(null);
   const [loading, setLoading] = useState(true);
   const [userInitial, setUserInitial] = useState('');
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,8 +33,12 @@ export default function DashboardPage() {
       if (!session?.access_token) { router.push('/login'); return; }
       setUserInitial((session.user.email?.[0] ?? '?').toUpperCase());
       try {
-        const list = await agendasApi.list(session.access_token);
-        setAgendas(list);
+        const [list, meData] = await Promise.all([
+          agendasApi.list(session.access_token),
+          userApi.me(session.access_token),
+        ]);
+        setAgendas(list ?? []);
+        setMe(meData);
       } catch {
         setAgendas([]);
       } finally {
@@ -42,6 +48,17 @@ export default function DashboardPage() {
   }, [router]);
 
   const sharedCount = agendas.filter((a) => a.role && a.role !== 'owner').length;
+  const plan = me?.plan ?? 'free';
+  const limit = PLAN_LIMITS[plan] ?? 3;
+  const ownedCount = agendas.filter((a) => !a.role || a.role === 'owner').length;
+  const atLimit = limit !== Infinity && ownedCount >= limit;
+  const nearLimit = limit !== Infinity && ownedCount >= Math.floor(limit * 0.8) && !atLimit;
+  const nextPlan = plan === 'free' ? 'starter' : plan === 'starter' ? 'basic' : plan === 'basic' ? 'pro' : null;
+
+  function handleNewAgenda() {
+    if (atLimit) { setShowLimitModal(true); return; }
+    router.push('/agendas/new');
+  }
 
   return (
     <div className="min-h-screen bg-[#111111]">
@@ -57,13 +74,31 @@ export default function DashboardPage() {
               </p>
             )}
           </div>
-          <Link
-            href="/agendas/new"
+          <button
+            type="button"
+            onClick={handleNewAgenda}
             className="rounded-md bg-[#fafafa] px-3.5 py-1.5 text-sm font-semibold text-[#111] transition-colors hover:bg-[#e5e5e5]"
           >
             + New agenda
-          </Link>
+          </button>
         </div>
+
+        {/* Upgrade banner — shown when near or at limit */}
+        {!loading && me && (nearLimit || atLimit) && nextPlan && (
+          <div className="mx-5 mb-4 flex items-center justify-between rounded-lg border border-[#2a2a2a] bg-[#161616] px-4 py-3">
+            <p className="text-xs text-[#888]">
+              {atLimit
+                ? `You've reached your ${PLAN_LABELS[plan]} limit (${limit} agendas).`
+                : `You're using ${ownedCount} of ${limit} agendas on the ${PLAN_LABELS[plan]} plan.`}
+            </p>
+            <Link
+              href="/pricing"
+              className="ml-4 shrink-0 text-xs font-medium text-[#fafafa] underline hover:text-[#e5e5e5]"
+            >
+              Upgrade →
+            </Link>
+          </div>
+        )}
 
         {loading ? (
           <div className="mx-5 mb-5 overflow-hidden rounded-lg border border-[#1f1f1f]">
@@ -80,9 +115,9 @@ export default function DashboardPage() {
         ) : agendas.length === 0 ? (
           <div className="mx-5 mb-5 rounded-lg border border-dashed border-[#2a2a2a] p-10 text-center">
             <p className="mb-3 text-sm text-[#555]">No agendas yet.</p>
-            <Link href="/agendas/new" className="text-sm text-[#888] underline hover:text-[#fafafa]">
+            <button type="button" onClick={handleNewAgenda} className="text-sm text-[#888] underline hover:text-[#fafafa]">
               Create your first agenda
-            </Link>
+            </button>
           </div>
         ) : (
           <div className="mx-5 mb-5 overflow-hidden rounded-lg border border-[#1f1f1f]">
@@ -111,6 +146,36 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Limit modal */}
+      {showLimitModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-5">
+          <div className="w-full max-w-[360px] rounded-xl border border-[#2a2a2a] bg-[#161616] p-6">
+            <p className="mb-1 text-sm font-semibold text-[#fafafa]">
+              {PLAN_LABELS[plan]} plan limit reached
+            </p>
+            <p className="mb-5 text-xs text-[#555]">
+              You've used all {limit} agenda slots on your {PLAN_LABELS[plan]} plan.
+              Upgrade to create more.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/pricing"
+                className="rounded-lg bg-[#fafafa] py-2.5 text-center text-sm font-semibold text-[#111] transition-colors hover:bg-[#e5e5e5]"
+              >
+                View pricing
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowLimitModal(false)}
+                className="rounded-lg border border-[#2a2a2a] py-2.5 text-sm font-medium text-[#555] transition-colors hover:border-[#444] hover:text-[#fafafa]"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
