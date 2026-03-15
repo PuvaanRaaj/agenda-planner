@@ -43,7 +43,7 @@ export default function OnboardingPage() {
       if (!session?.access_token) { router.replace('/login'); return; }
       setToken(session.access_token);
     })();
-  }, [router]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function finish() {
     localStorage.setItem('onboarding_complete', 'true');
@@ -75,8 +75,7 @@ export default function OnboardingPage() {
       await itemsApi.create(agendaId, { title: itemTitle.trim(), date: itemDate, start_time: itemTime }, token);
       try {
         const { token: shareToken } = await shareApi.createToken(agendaId, { permission: 'view' }, token);
-        const base = typeof window !== 'undefined' ? window.location.origin : '';
-        setShareUrl(`${base}/share/${shareToken}`);
+        setShareUrl(`${window.location.origin}/share/${shareToken}`);
       } catch {
         setShareUrl('');
       }
@@ -90,7 +89,7 @@ export default function OnboardingPage() {
 
   function copyUrl() {
     if (!shareUrl) return;
-    navigator.clipboard.writeText(shareUrl);
+    navigator.clipboard.writeText(shareUrl).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -147,7 +146,7 @@ export default function OnboardingPage() {
                 className={INPUT} placeholder="What is this agenda for?" />
             </div>
             {error && <p className="text-xs text-red-400">{error}</p>}
-            <button type="submit" disabled={loading || !agendaTitle.trim()}
+            <button type="submit" disabled={loading || !token || !agendaTitle.trim()}
               className="rounded-md bg-[#fafafa] py-2.5 text-sm font-semibold text-[#111] transition-colors hover:bg-[#e5e5e5] disabled:opacity-40">
               {loading ? 'Creating…' : 'Create agenda →'}
             </button>
