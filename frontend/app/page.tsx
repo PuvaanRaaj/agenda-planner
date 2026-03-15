@@ -1,5 +1,17 @@
 import Link from 'next/link';
 
+export const metadata = {
+  title: 'Home',
+  description:
+    'Create time-slotted agendas, share via links, and collaborate with comments and role-based permissions. Get started free.',
+  openGraph: {
+    title: 'Agenda Planner — Collaborative time-slotted plans',
+    description:
+      'Create time-slotted agendas, share via links, and collaborate with comments and role-based permissions.',
+    url: '/',
+  },
+};
+
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 bg-[#111111] p-8">
