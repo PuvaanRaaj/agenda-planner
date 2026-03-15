@@ -1,16 +1,13 @@
 'use client';
 
 type Props = {
-  selectedDate: string; // YYYY-MM-DD
+  selectedDate: string;
   onSelectDate: (date: string) => void;
-  itemDates: Set<string>; // dates that have items, for dot indicator
+  itemDates: Set<string>;
 };
 
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-// Use local-time formatting to avoid UTC offset shifting the date.
-// d.toISOString() would shift to UTC and produce the wrong date for
-// users in negative UTC-offset timezones (e.g. UTC-5).
 function toDateStr(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -20,7 +17,7 @@ function toDateStr(d: Date): string {
 
 function getWeekDays(selectedDate: string): Date[] {
   const selected = new Date(selectedDate + 'T00:00:00');
-  const day = selected.getDay(); // 0=Sun
+  const day = selected.getDay();
   const mondayOffset = day === 0 ? -6 : 1 - day;
   const monday = new Date(selected);
   monday.setDate(monday.getDate() + mondayOffset);
@@ -41,11 +38,11 @@ export default function WeekStrip({ selectedDate, onSelectDate, itemDates }: Pro
   }
 
   return (
-    <div className="flex items-center gap-1 border-b border-[#1a1a1a] px-4 py-3">
+    <div className="flex items-center gap-1 border-b border-slate-200 bg-white px-4 py-3">
       <button
         type="button"
         onClick={() => shiftWeek(-1)}
-        className="rounded-md p-1.5 text-[#555] transition-colors hover:bg-[#161616] hover:text-[#fafafa]"
+        className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
         aria-label="Previous week"
       >
         ‹
@@ -59,26 +56,24 @@ export default function WeekStrip({ selectedDate, onSelectDate, itemDates }: Pro
             key={dateStr}
             type="button"
             onClick={() => onSelectDate(dateStr)}
-            className={`flex flex-1 flex-col items-center rounded-md py-1.5 transition-colors ${
-              isSelected ? 'bg-[#fafafa]' : 'hover:bg-[#161616]'
+            className={`flex flex-1 flex-col items-center rounded-lg py-2 transition ${
+              isSelected ? 'bg-primary-600 text-white' : 'hover:bg-slate-100 text-slate-600'
             }`}
           >
-            <span className={`mb-0.5 text-[9px] font-medium ${isSelected ? 'text-[#777]' : 'text-[#555]'}`}>
-              {DAY_NAMES[i]}
-            </span>
-            <span className={`text-sm font-semibold ${isSelected ? 'text-[#111]' : 'text-[#444]'}`}>
-              {day.getDate()}
-            </span>
-            <div className={`mt-0.5 h-1 w-1 rounded-full ${
-              hasItems ? (isSelected ? 'bg-[#555]' : 'bg-[#333]') : 'invisible'
-            }`} />
+            <span className="mb-0.5 text-[10px] font-medium opacity-90">{DAY_NAMES[i]}</span>
+            <span className="text-sm font-semibold">{day.getDate()}</span>
+            <div
+              className={`mt-1 h-1 w-1 rounded-full ${
+                hasItems ? (isSelected ? 'bg-white/80' : 'bg-primary-500') : 'invisible'
+              }`}
+            />
           </button>
         );
       })}
       <button
         type="button"
         onClick={() => shiftWeek(1)}
-        className="rounded-md p-1.5 text-[#555] transition-colors hover:bg-[#161616] hover:text-[#fafafa]"
+        className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
         aria-label="Next week"
       >
         ›
