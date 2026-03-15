@@ -47,6 +47,7 @@ func main() {
 
 	r.Route("/auth", func(r chi.Router) {
 		r.With(auth).Post("/sync", h.AuthSync)
+		r.With(auth).Get("/me", h.GetMe)
 	})
 
 	r.Route("/agendas", func(r chi.Router) {

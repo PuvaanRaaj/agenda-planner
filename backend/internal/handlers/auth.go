@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
@@ -37,4 +38,28 @@ func (h *Handler) AuthSync(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) GetMe(w http.ResponseWriter, r *http.Request) {
+	userID, ok := middleware.GetUserID(r.Context())
+	if !ok {
+		jsonError(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	var me models.UserMe
+	err := h.DB.QueryRow(`
+		SELECT u.id, u.email, COALESCE(u.plan, 'free'), COUNT(a.id)
+		FROM users u
+		LEFT JOIN agendas a ON a.owner_id = u.id
+		WHERE u.id = $1
+		GROUP BY u.id, u.email, u.plan`, userID).Scan(&me.ID, &me.Email, &me.Plan, &me.AgendaCount)
+	if err == sql.ErrNoRows {
+		jsonError(w, "user not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		internalError(w, err)
+		return
+	}
+	json.NewEncoder(w).Encode(me)
 }

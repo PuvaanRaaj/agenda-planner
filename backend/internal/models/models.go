@@ -112,3 +112,10 @@ type AuthSyncRequest struct {
 	Email string  `json:"email"`
 	Name  *string `json:"name,omitempty"`
 }
+
+type UserMe struct {
+	ID          string `json:"id"`
+	Email       string `json:"email"`
+	Plan        string `json:"plan"`
+	AgendaCount int    `json:"agenda_count"`
+}
