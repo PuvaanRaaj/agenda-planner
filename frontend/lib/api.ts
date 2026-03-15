@@ -103,3 +103,43 @@ export const commentsApi = {
   delete: (commentId: string, token: string) =>
     api<void>(`/comments/${commentId}`, { method: 'DELETE', token }),
 };
+
+export type UserMe = {
+  id: string;
+  email: string;
+  plan: 'free' | 'starter' | 'basic' | 'pro';
+  agenda_count: number;
+};
+
+export const userApi = {
+  me: (token: string) => api<UserMe>('/auth/me', { token }),
+};
+
+export const billingApi = {
+  createCheckout: (plan: string, token: string) =>
+    api<{ url: string }>('/billing/checkout', {
+      method: 'POST',
+      body: JSON.stringify({ plan }),
+      token,
+    }),
+  openPortal: (token: string) =>
+    api<{ url: string }>('/billing/portal', {
+      method: 'POST',
+      body: JSON.stringify({}),
+      token,
+    }),
+};
+
+export const PLAN_LIMITS: Record<string, number> = {
+  free: 3,
+  starter: 5,
+  basic: 10,
+  pro: Infinity,
+};
+
+export const PLAN_LABELS: Record<string, string> = {
+  free: 'Free',
+  starter: 'Starter',
+  basic: 'Basic',
+  pro: 'Pro',
+};
