@@ -7,7 +7,7 @@ import { getSupabase } from '@/lib/supabase';
 import { authApi } from '@/lib/api';
 
 const inputClass =
-  'w-full rounded-lg border border-slate-600 bg-slate-800/50 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
+  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
 
 function SignupForm() {
   const [email, setEmail] = useState('');
@@ -55,26 +55,26 @@ function SignupForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 p-6">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
       <div className="w-full max-w-[360px]">
         <Link href="/" className="mb-8 inline-flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-500">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-600">
             <span className="text-sm font-bold text-white">A</span>
           </div>
-          <span className="text-sm font-semibold text-slate-300">Agenda Planner</span>
+          <span className="text-sm font-semibold text-slate-700">Agenda Planner</span>
         </Link>
         {confirmed ? (
-          <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-5">
-            <p className="mb-1 text-sm font-medium text-slate-100">Check your email</p>
-            <p className="text-sm text-slate-400">We sent a confirmation link to {email}.</p>
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="mb-1 text-sm font-medium text-slate-900">Check your email</p>
+            <p className="text-sm text-slate-600">We sent a confirmation link to {email}.</p>
           </div>
         ) : (
           <>
-            <h1 className="mb-1 text-2xl font-semibold tracking-tight text-slate-100">Create account</h1>
-            <p className="mb-6 text-sm text-slate-400">Get started for free</p>
+            <h1 className="mb-1 text-2xl font-semibold tracking-tight text-slate-900">Create account</h1>
+            <p className="mb-6 text-sm text-slate-600">Get started for free</p>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
-                <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-slate-400">
+                <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-slate-700">
                   Email
                 </label>
                 <input
@@ -88,7 +88,7 @@ function SignupForm() {
                 />
               </div>
               <div>
-                <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-slate-400">
+                <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-slate-700">
                   Password
                 </label>
                 <input
@@ -103,7 +103,7 @@ function SignupForm() {
                 />
               </div>
               <div>
-                <label htmlFor="confirm" className="mb-1.5 block text-xs font-medium text-slate-400">
+                <label htmlFor="confirm" className="mb-1.5 block text-xs font-medium text-slate-700">
                   Confirm password
                 </label>
                 <input
@@ -116,21 +116,21 @@ function SignupForm() {
                   placeholder="••••••••"
                 />
               </div>
-              {error && <p className="text-sm text-red-400">{error}</p>}
+              {error && <p className="text-sm text-red-600">{error}</p>}
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-1 w-full rounded-lg bg-primary-500 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:opacity-50"
+                className="mt-1 w-full rounded-lg bg-primary-600 py-2.5 text-sm font-semibold text-white transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
               >
                 {loading ? 'Creating…' : 'Create account'}
               </button>
             </form>
-            <div className="my-6 h-px bg-slate-800" />
-            <p className="text-center text-sm text-slate-500">
+            <div className="my-6 h-px bg-slate-200" />
+            <p className="text-center text-sm text-slate-600">
               Already have an account?{' '}
               <Link
                 href={`/login?redirect=${encodeURIComponent(redirect)}`}
-                className="font-medium text-primary-400 hover:text-primary-300 underline"
+                className="font-medium text-primary-600 hover:text-primary-700 underline"
               >
                 Sign in
               </Link>

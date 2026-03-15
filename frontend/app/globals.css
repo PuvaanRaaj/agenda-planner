@@ -4,16 +4,15 @@
 
 @layer base {
   html {
-    @apply bg-slate-950 text-slate-100;
+    @apply bg-slate-50 text-slate-900;
   }
 
   ::selection {
-    @apply bg-primary-500/30 text-slate-100;
+    @apply bg-blue-100 text-slate-900;
   }
 
   input[type='date']::-webkit-calendar-picker-indicator,
   input[type='time']::-webkit-calendar-picker-indicator {
-    filter: invert(1);
     @apply opacity-50;
   }
 }

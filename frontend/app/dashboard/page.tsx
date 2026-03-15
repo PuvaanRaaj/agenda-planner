@@ -47,12 +47,12 @@ export default function DashboardPage() {
   const sharedCount = agendas.filter((a) => a.role && a.role !== 'owner').length;
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-50">
       <TopNav userInitial={userInitial} />
       <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
         <div className="mb-6 flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-100">My Agendas</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-slate-900">My Agendas</h1>
             {!loading && (
               <p className="mt-1 text-sm text-slate-500">
                 {agendas.length} agenda{agendas.length !== 1 ? 's' : ''}
@@ -62,47 +62,47 @@ export default function DashboardPage() {
           </div>
           <Link
             href="/agendas/new"
-            className="shrink-0 rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+            className="shrink-0 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
           >
             + New agenda
           </Link>
         </div>
 
         {loading ? (
-          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="flex items-center justify-between border-b border-slate-800 px-4 py-4 last:border-b-0"
+                className="flex items-center justify-between border-b border-slate-100 px-4 py-4 last:border-b-0"
               >
                 <div className="space-y-2">
-                  <div className="h-4 w-48 animate-pulse rounded bg-slate-700" />
-                  <div className="h-3 w-32 animate-pulse rounded bg-slate-800" />
+                  <div className="h-4 w-48 animate-pulse rounded bg-slate-200" />
+                  <div className="h-3 w-32 animate-pulse rounded bg-slate-100" />
                 </div>
-                <div className="h-6 w-16 animate-pulse rounded-full bg-slate-700" />
+                <div className="h-6 w-16 animate-pulse rounded-full bg-slate-100" />
               </div>
             ))}
           </div>
         ) : agendas.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-700 bg-slate-900/30 p-10 text-center">
-            <p className="mb-3 text-sm text-slate-500">No agendas yet.</p>
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
+            <p className="mb-3 text-sm text-slate-600">No agendas yet.</p>
             <Link
               href="/agendas/new"
-              className="inline-block rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600"
+              className="inline-block rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700"
             >
               Create your first agenda
             </Link>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             {agendas.map((a) => (
               <Link
                 key={a.id}
                 href={`/agendas/${a.id}`}
-                className="flex items-center justify-between border-b border-slate-800 px-4 py-4 transition last:border-b-0 hover:bg-slate-800/50"
+                className="flex items-center justify-between border-b border-slate-100 px-4 py-4 transition last:border-b-0 hover:bg-slate-50"
               >
                 <div>
-                  <p className="text-sm font-medium text-slate-100">{a.title}</p>
+                  <p className="text-sm font-medium text-slate-900">{a.title}</p>
                   <p className="mt-0.5 text-xs text-slate-500">
                     {a.item_count ?? 0} item{(a.item_count ?? 0) !== 1 ? 's' : ''} · Updated{' '}
                     {relativeTime(a.updated_at)}
@@ -110,11 +110,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   {a.role && (
-                    <span className="rounded-full bg-slate-700/50 px-2.5 py-0.5 text-xs font-medium text-slate-400">
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
                       {a.role}
                     </span>
                   )}
-                  <span className="text-slate-600">›</span>
+                  <span className="text-slate-400">›</span>
                 </div>
               </Link>
             ))}

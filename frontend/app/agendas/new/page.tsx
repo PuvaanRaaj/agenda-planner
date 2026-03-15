@@ -7,8 +7,8 @@ import { getSupabase } from '@/lib/supabase';
 import { agendasApi } from '@/lib/api';
 
 const INPUT =
-  'w-full rounded-lg border border-slate-600 bg-slate-800/50 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-offset-slate-950';
-const LABEL = 'mb-1.5 block text-xs font-medium text-slate-400';
+  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
+const LABEL = 'mb-1.5 block text-xs font-medium text-slate-700';
 
 export default function NewAgendaPage() {
   const [title, setTitle] = useState('');
@@ -43,10 +43,10 @@ export default function NewAgendaPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 p-6">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
       <div className="w-full max-w-[480px]">
-        <h1 className="mb-1 text-xl font-semibold tracking-tight text-slate-100">New agenda</h1>
-        <p className="mb-6 text-sm text-slate-400">Give your agenda a name to get started.</p>
+        <h1 className="mb-1 text-xl font-semibold tracking-tight text-slate-900">New agenda</h1>
+        <p className="mb-6 text-sm text-slate-600">Give your agenda a name to get started.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label htmlFor="title" className={LABEL}>Title</label>
@@ -61,7 +61,7 @@ export default function NewAgendaPage() {
           </div>
           <div>
             <label htmlFor="description" className={LABEL}>
-              Description <span className="text-slate-500">(optional)</span>
+              Description <span className="text-slate-400">(optional)</span>
             </label>
             <textarea
               id="description"
@@ -85,18 +85,18 @@ export default function NewAgendaPage() {
               <option value="public">Public</option>
             </select>
           </div>
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="mt-2 flex gap-2">
             <button
               type="submit"
               disabled={loading}
-              className="rounded-lg bg-primary-500 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-600 disabled:opacity-50 transition-colors focus:ring-offset-slate-950"
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {loading ? 'Creating…' : 'Create agenda'}
             </button>
             <Link
               href="/dashboard"
-              className="rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-400 hover:bg-slate-800 transition-colors"
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
             >
               Cancel
             </Link>
