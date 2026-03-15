@@ -88,18 +88,6 @@ Add to `~/.claude/settings.json`:
 }
 ```
 
-## Deployment
-
-### Backend → Railway
-
-1. New project on [railway.app](https://railway.app), deploy from GitHub, root directory `backend/`
-2. Set env vars: `DATABASE_URL`, `SUPABASE_JWT_SECRET`, `PORT=8080`
-
-### Frontend → Vercel
-
-1. Import repo on [vercel.com](https://vercel.com), root directory `frontend/`
-2. Set env vars: `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-
 ## Project Structure
 
 ```
